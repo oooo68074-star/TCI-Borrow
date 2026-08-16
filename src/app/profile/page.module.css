@@ -1,0 +1,169 @@
+.profileGrid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: var(--space-xl);
+    align-items: start;
+}
+
+/* Profile Card */
+.profileCard {
+    padding: 0;
+    overflow: hidden;
+    text-align: center;
+}
+
+.profileBanner {
+    height: 100px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bannerGradient {
+    position: absolute;
+    inset: 0;
+    background: var(--accent-gradient);
+    background-size: 200% 200%;
+    animation: gradientMove 6s ease infinite;
+}
+
+.profileMain {
+    padding: var(--space-lg);
+    margin-top: -40px;
+    position: relative;
+}
+
+.profileMain h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: var(--space-md);
+}
+
+.email {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.department {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Stats */
+.statsRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+    border-top: 1px solid var(--border-color);
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 0 var(--space-md);
+    color: var(--text-secondary);
+}
+
+.statItem div {
+    display: flex;
+    flex-direction: column;
+}
+
+.statNum {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.statLabel {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.statDivider {
+    width: 1px;
+    height: 32px;
+    background: var(--border-color);
+}
+
+/* Edit Card */
+.editCard {
+    min-height: 400px;
+}
+
+.editHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xl);
+}
+
+.editHeader h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.formFields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.fieldItem {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.fieldItem:hover {
+    background: var(--bg-secondary);
+}
+
+.fieldIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.fieldContent {
+    flex: 1;
+}
+
+.fieldContent label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.fieldContent p {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.fieldContent .input-field {
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    .profileGrid {
+        grid-template-columns: 1fr;
+    }
+}

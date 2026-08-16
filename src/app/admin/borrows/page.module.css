@@ -1,0 +1,145 @@
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xl);
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+}
+
+.tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+}
+
+.activeTab {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+.activeTab:hover {
+    color: white;
+}
+
+.tabCount {
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-weight: 600;
+}
+
+.tab:not(.activeTab) .tabCount {
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+}
+
+/* Borrows List */
+.borrowsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.borrowCard {
+    animation: fadeInUp 0.3s ease backwards;
+}
+
+.borrowTop {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.borrowImage {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.borrowImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.borrowImage span {
+    font-size: 1.4rem;
+}
+
+.borrowInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.borrowInfo h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.metaRow {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.metaRow span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-color);
+    justify-content: flex-end;
+}
+
+.approveBtn {
+    font-size: 0.85rem;
+}
+
+.rejectBtn {
+    font-size: 0.85rem;
+    color: var(--danger) !important;
+}
+
+.returnBtn {
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .borrowTop {
+        flex-wrap: wrap;
+    }
+
+    .actions {
+        flex-wrap: wrap;
+    }
+}

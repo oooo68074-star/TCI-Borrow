@@ -1,0 +1,260 @@
+.filterBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+    align-items: center;
+}
+
+.searchBox {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.searchBox svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.searchBox .input-field {
+    padding-left: 42px;
+}
+
+.filters {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+.select {
+    min-width: 150px;
+    cursor: pointer;
+    appearance: auto;
+}
+
+.viewToggle {
+    display: flex;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 3px;
+    border: 1px solid var(--border-color);
+}
+
+.viewBtn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+}
+
+.viewBtn:hover {
+    color: var(--text-primary);
+}
+
+.viewBtn.activeView {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+.resultCount {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+/* Item Card */
+.itemCard {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    animation: fadeInUp 0.4s ease backwards;
+}
+
+.itemImageContainer {
+    height: 160px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.itemImageElement {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+}
+
+.itemCard:hover .itemImageElement {
+    transform: scale(1.05);
+}
+
+.itemImageFallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.itemEmoji {
+    font-size: 3rem;
+}
+
+.itemInfo {
+    padding: var(--space-lg);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.itemTop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.itemName {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.itemDesc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+
+.itemMeta {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-color);
+}
+
+.itemMeta span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* List View */
+.listView {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.listItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    animation: fadeInUp 0.3s ease backwards;
+}
+
+.listItemImageContainer {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.listItemImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.listItemIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+}
+
+.listItemInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.listItemInfo h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.listItemInfo p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.listItemMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.listItemMeta span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .filterBar {
+        flex-direction: column;
+    }
+
+    .searchBox {
+        width: 100%;
+    }
+
+    .filters {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .select {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .listItem {
+        flex-wrap: wrap;
+    }
+
+    .listItemMeta {
+        flex-direction: row;
+        gap: var(--space-md);
+    }
+}

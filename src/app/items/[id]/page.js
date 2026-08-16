@@ -1,0 +1,259 @@
+'use client';
+
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {
+    ArrowLeft, MapPin, User, Calendar, Clock, Tag,
+    Heart, Share2, AlertCircle, CheckCircle2, X
+} from 'lucide-react';
+import { categories } from '@/data/mockData';
+import { useAuth } from '@/context/AuthContext';
+import { useData } from '@/context/DataContext';
+import styles from './page.module.css';
+
+export default function ItemDetailPage() {
+    const { user } = useAuth();
+    const { items, borrows, addBorrowRequest } = useData();
+    const params = useParams();
+    const router = useRouter();
+    const [showBorrowModal, setShowBorrowModal] = useState(false);
+    const [borrowNote, setBorrowNote] = useState('');
+    const [borrowDays, setBorrowDays] = useState(7);
+    const [submitted, setSubmitted] = useState(false);
+
+    const item = items.find(i => i.id === params.id);
+    const itemBorrows = borrows.filter(b => b.itemId === params.id);
+
+    if (!item) {
+        return (
+            <div className="page-container">
+                <div className="empty-state">
+                    <AlertCircle size={64} />
+                    <h3>ไม่พบรายการนี้</h3>
+                    <Link href="/items" className="btn btn-primary" style={{ marginTop: '16px' }}>
+                        กลับไปรายการของ
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    const category = categories.find(c => c.id === item.category);
+
+    const getStatusText = (status) => {
+        const map = { available: 'ว่าง', borrowed: 'ถูกยืม', unavailable: 'ไม่พร้อมใช้งาน' };
+        return map[status] || status;
+    };
+
+    const getStatusClass = (status) => {
+        const map = { available: 'badge-available', borrowed: 'badge-borrowed', unavailable: 'badge-unavailable' };
+        return map[status] || '';
+    };
+
+    const formatDate = (str) => new Date(str).toLocaleDateString('th-TH', {
+        day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+    const handleBorrow = () => {
+        setSubmitted(true);
+
+        // Add to global state
+        addBorrowRequest({
+            itemId: item.id,
+            itemName: item.name,
+            ownerId: item.ownerId,
+            ownerName: item.ownerName || 'แอดมิน',
+            borrowerId: user.id,
+            borrowerName: user.name,
+            borrowerEmail: user.email,
+            borrowerDept: user.department,
+            note: borrowNote,
+            expectedReturnDays: borrowDays,
+        });
+
+        setTimeout(() => {
+            setShowBorrowModal(false);
+            setSubmitted(false);
+            setBorrowNote('');
+            router.push('/my-borrows');
+        }, 1500);
+    };
+
+    return (
+        <div className="page-container">
+            {/* Back Button */}
+            <button className={`btn btn-ghost ${styles.backBtn}`} onClick={() => router.back()}>
+                <ArrowLeft size={18} /> กลับ
+            </button>
+
+            <div className={styles.detailGrid}>
+                {/* Image Section */}
+                <div className={styles.imageSection}>
+                    <div className={styles.mainImage}>
+                        {item.image ? (
+                            <img src={item.image} alt={item.name} className={styles.fullImage} />
+                        ) : (
+                            <span className={styles.emoji}>{category?.icon || '📦'}</span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Info Section */}
+                <div className={styles.infoSection}>
+                    <div className={styles.infoHeader}>
+                        <div>
+                            <span className={`badge ${getStatusClass(item.status)}`}>
+                                {getStatusText(item.status)}
+                            </span>
+                            <h1 className={styles.itemTitle}>{item.name}</h1>
+                        </div>
+                        <div className={styles.actions}>
+                            <button className="btn-icon btn-secondary">
+                                <Heart size={18} />
+                            </button>
+                            <button className="btn-icon btn-secondary">
+                                <Share2 size={18} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <p className={styles.description}>{item.description}</p>
+
+                    <div className={styles.metaList}>
+                        <div className={styles.metaItem}>
+                            <Tag size={16} />
+                            <span>หมวดหมู่: {category?.name || 'ไม่ระบุ'}</span>
+                        </div>
+                        <div className={styles.metaItem}>
+                            <MapPin size={16} />
+                            <span>สถานที่: {item.location}</span>
+                        </div>
+                        <div className={styles.metaItem}>
+                            <User size={16} />
+                            <span>เจ้าของ: {item.ownerName}</span>
+                        </div>
+                        <div className={styles.metaItem}>
+                            <CheckCircle2 size={16} />
+                            <span>สภาพ: {item.condition}</span>
+                        </div>
+                        <div className={styles.metaItem}>
+                            <Tag size={16} />
+                            <span>จำนวนรวม: {item.quantity || 1} ชิ้น</span>
+                        </div>
+                        <div className={styles.metaItem}>
+                            <Calendar size={16} />
+                            <span>เพิ่มเมื่อ: {formatDate(item.createdAt)}</span>
+                        </div>
+                    </div>
+
+                    {/* Borrow Button */}
+                    {item.status === 'available' && item.ownerId !== user?.id && (
+                        <button
+                            className={`btn btn-primary btn-lg ${styles.borrowBtn}`}
+                            onClick={() => setShowBorrowModal(true)}
+                        >
+                            ขอยืม
+                        </button>
+                    )}
+
+                    {item.ownerId === user?.id && (
+                        <div className={styles.ownerNote}>
+                            <AlertCircle size={16} />
+                            <span>นี่คือของของคุณ</span>
+                        </div>
+                    )}
+
+                    {item.status === 'borrowed' && (
+                        <div className={styles.borrowedNote}>
+                            <Clock size={16} />
+                            <span>ของชิ้นนี้ถูกยืมอยู่ในขณะนี้</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Borrow History */}
+            <div className={`card ${styles.historySection}`}>
+                <h2>ประวัติการยืม</h2>
+                {itemBorrows.length === 0 ? (
+                    <p className={styles.noHistory}>ยังไม่มีประวัติการยืม</p>
+                ) : (
+                    <div className={styles.historyList}>
+                        {itemBorrows.map(borrow => (
+                            <div key={borrow.id} className={styles.historyItem}>
+                                <div className="avatar avatar-sm">
+                                    {borrow.borrowerName[0]}
+                                </div>
+                                <div className={styles.historyInfo}>
+                                    <p><strong>{borrow.borrowerName}</strong></p>
+                                    <span>{formatDate(borrow.borrowDate)} — {borrow.returnDate ? formatDate(borrow.returnDate) : 'ยังไม่คืน'}</span>
+                                </div>
+                                <span className={`badge badge-${borrow.status === 'returned' ? 'available' : borrow.status === 'active' ? 'borrowed' : 'pending'}`}>
+                                    {borrow.status === 'returned' ? 'คืนแล้ว' : borrow.status === 'active' ? 'กำลังยืม' : 'รอดำเนินการ'}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Borrow Modal */}
+            {showBorrowModal && (
+                <div className="modal-overlay" onClick={() => !submitted && setShowBorrowModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        {submitted ? (
+                            <div className={styles.successMessage}>
+                                <CheckCircle2 size={48} className={styles.successIcon} />
+                                <h2>ส่งคำขอยืมสำเร็จ!</h2>
+                                <p>รอเจ้าของอนุมัติคำขอของคุณ</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="modal-header">
+                                    <h2>ขอยืม {item.name}</h2>
+                                    <button className="btn-icon" onClick={() => setShowBorrowModal(false)}>
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className={styles.modalForm}>
+                                    <div className="input-group">
+                                        <label>จำนวนวันที่ต้องการยืม</label>
+                                        <select
+                                            value={borrowDays}
+                                            onChange={(e) => setBorrowDays(Number(e.target.value))}
+                                            className="input-field"
+                                        >
+                                            <option value={1}>1 วัน</option>
+                                            <option value={3}>3 วัน</option>
+                                            <option value={7}>7 วัน</option>
+                                            <option value={14}>14 วัน</option>
+                                            <option value={30}>30 วัน</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label>หมายเหตุ (ไม่บังคับ)</label>
+                                        <textarea
+                                            className="input-field"
+                                            placeholder="ระบุเหตุผลหรือรายละเอียดเพิ่มเติม..."
+                                            value={borrowNote}
+                                            onChange={(e) => setBorrowNote(e.target.value)}
+                                            rows={3}
+                                            style={{ resize: 'vertical' }}
+                                        />
+                                    </div>
+
+                                    <button className="btn btn-primary btn-lg" onClick={handleBorrow} style={{ width: '100%', marginTop: '8px' }}>
+                                        ยืนยันคำขอยืม
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

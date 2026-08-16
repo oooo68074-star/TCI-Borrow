@@ -1,0 +1,131 @@
+.filterBar {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.searchBox {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.searchBox svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.searchBox .input-field {
+    padding-left: 42px;
+}
+
+/* Table */
+.tableCard {
+    padding: 0;
+    overflow: hidden;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.table th {
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.table tr:hover td {
+    background: var(--bg-secondary);
+}
+
+/* Item Cell */
+.itemCell {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.itemThumb {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.itemThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.itemThumb span {
+    font-size: 1.2rem;
+}
+
+.itemName {
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.itemId {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.catBadge {
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.locationText,
+.ownerText {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Action Buttons */
+.actionBtns {
+    display: flex;
+    gap: 4px;
+}
+
+@media (max-width: 768px) {
+    .filterBar {
+        flex-direction: column;
+    }
+}
