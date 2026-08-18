@@ -1,18 +1,27 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Search, Grid3X3, List, Filter, Package } from 'lucide-react';
 import { categories } from '@/data/mockData';
 import { useData } from '@/context/DataContext';
 import styles from './page.module.css';
 
-export default function ItemsPage() {
+function ItemsContent() {
+    const searchParams = useSearchParams();
     const { items } = useData();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [viewMode, setViewMode] = useState('grid');
+
+    useEffect(() => {
+        const q = searchParams.get('q');
+        if (q !== null) {
+            setSearchQuery(q);
+        }
+    }, [searchParams]);
 
     const filteredItems = useMemo(() => {
         return items.filter(item => {
@@ -187,5 +196,13 @@ export default function ItemsPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function ItemsPage() {
+    return (
+        <Suspense fallback={<div className="page-container"><p>กำลังโหลด...</p></div>}>
+            <ItemsContent />
+        </Suspense>
     );
 }

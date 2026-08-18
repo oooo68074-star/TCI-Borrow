@@ -38,6 +38,28 @@
     margin-top: var(--space-md);
 }
 
+.avatarEditBtn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: var(--accent-gradient);
+    color: var(--text-on-primary);
+    border-radius: var(--radius-full);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+    z-index: 10;
+}
+
+.avatarEditBtn:hover {
+    transform: scale(1.1);
+    background: var(--accent-gradient-hover);
+}
+
 .email {
     font-size: 0.85rem;
     color: var(--text-secondary);

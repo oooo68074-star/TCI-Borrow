@@ -45,8 +45,8 @@ export default function AppLayout({ children }) {
 
         // Logged in: enforce correct section
         if (user) {
-            // Admin trying to access user pages (except /profile and /items)
-            if (isAdmin && !pathname.startsWith('/admin') && pathname !== '/profile' && !pathname.startsWith('/items')) {
+            // Admin trying to access user pages (except /profile, /items, /settings)
+            if (isAdmin && !pathname.startsWith('/admin') && pathname !== '/profile' && !pathname.startsWith('/items') && !pathname.startsWith('/settings')) {
                 navigate('/admin');
                 return;
             }

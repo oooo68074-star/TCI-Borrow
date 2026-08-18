@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Package, ArrowLeftRight, PlusCircle,
-    User, ChevronLeft, Sparkles, ClipboardList, LogOut
+    User, ChevronLeft, Sparkles, ClipboardList, LogOut, Settings
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import styles from './Sidebar.module.css';
@@ -14,6 +14,7 @@ const userNav = [
     { href: '/items', label: 'ค้นหาของยืม', icon: Package },
     { href: '/my-borrows', label: 'รายการยืมของฉัน', icon: ArrowLeftRight },
     { href: '/profile', label: 'โปรไฟล์', icon: User },
+    { href: '/settings', label: 'ตั้งค่า', icon: Settings },
 ];
 
 const adminNav = [
@@ -22,6 +23,7 @@ const adminNav = [
     { href: '/admin/items/new', label: 'เพิ่มของใหม่', icon: PlusCircle },
     { href: '/admin/borrows', label: 'จัดการคำขอยืม', icon: ClipboardList },
     { href: '/profile', label: 'โปรไฟล์', icon: User },
+    { href: '/settings', label: 'ตั้งค่า', icon: Settings },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -42,12 +44,8 @@ export default function Sidebar({ isOpen, onClose }) {
             <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
                 {/* Logo */}
                 <div className={styles.logo}>
-                    <div className={styles.logoIcon}>
-                        <Sparkles size={24} />
-                    </div>
-                    <div className={styles.logoText}>
-                        <h1>BorrowHub</h1>
-                        <span>{isAdmin ? '🔒 ผู้ดูแลระบบ' : 'ยืมง่าย คืนสะดวก'}</span>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: '12px' }}>
+                        <img src="/logo.png" alt="TCIMCRU Logo" style={{ width: '180px', height: 'auto' }} />
                     </div>
                     <button className={styles.closeBtn} onClick={onClose}>
                         <ChevronLeft size={20} />
@@ -84,7 +82,9 @@ export default function Sidebar({ isOpen, onClose }) {
                 <div className={styles.userSection}>
                     {user && (
                         <div className={styles.userInfo}>
-                            <div className="avatar avatar-sm">{user.name?.[0]}</div>
+                            <div className="avatar avatar-sm" style={user?.avatar ? { background: `url(${user.avatar}) center/cover no-repeat` } : {}}>
+                                {!user?.avatar && user?.name?.[0]}
+                            </div>
                             <div className={styles.userName}>
                                 <p>{user.name}</p>
                                 <span>{user.email}</span>

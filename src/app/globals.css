@@ -2,26 +2,30 @@
 
 /* ===== DESIGN TOKENS ===== */
 :root {
-  /* Colors - Dark Theme */
-  --bg-primary: #0a0a12;
-  --bg-secondary: #12121e;
-  --bg-card: #1a1a2e;
-  --bg-card-hover: #22223a;
-  --bg-input: #16162a;
-  --bg-glass: rgba(26, 26, 46, 0.7);
+  /* Colors - Dark Theme (TCIMCRU Logo) */
+  --bg-primary: #3F4E65;
+  --bg-secondary: #334054;
+  --bg-card: #4B5A73;
+  --bg-card-hover: #566680;
+  --bg-input: #334054;
+  --bg-glass: rgba(63, 78, 101, 0.7);
 
-  --text-primary: #f0f0f5;
-  --text-secondary: #9d9db5;
-  --text-muted: #6b6b80;
-  --text-inverse: #0a0a12;
+  --text-primary: #F4F5F7;
+  --text-secondary: #C3C6CC;
+  --text-muted: #9AA3B3;
+  --text-inverse: #ffffff;
+  --text-on-primary: #1e293b;
+  /* Dark text for yellow bg */
 
-  --accent-primary: #6c5ce7;
-  --accent-primary-hover: #7c6ff7;
-  --accent-primary-light: rgba(108, 92, 231, 0.15);
-  --accent-secondary: #00cec9;
-  --accent-secondary-light: rgba(0, 206, 201, 0.15);
-  --accent-gradient: linear-gradient(135deg, #6c5ce7, #a855f7);
-  --accent-gradient-hover: linear-gradient(135deg, #7c6ff7, #b86aff);
+  --accent-primary: #F4C518;
+  --accent-primary-hover: #DDAA00;
+  --accent-primary-light: rgba(244, 197, 24, 0.15);
+  --accent-secondary: #C3C6CC;
+  --accent-secondary-light: rgba(195, 198, 204, 0.15);
+  --accent-gradient: linear-gradient(135deg, #F4C518, #E3A300);
+  --accent-gradient-hover: linear-gradient(135deg, #E3A300, #C28C00);
+
+  --heading-gradient: var(--accent-gradient);
 
   --status-available: #00b894;
   --status-available-bg: rgba(0, 184, 148, 0.12);
@@ -61,7 +65,7 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 20px rgba(108, 92, 231, 0.3);
+  --shadow-glow: 0 0 20px rgba(244, 197, 24, 0.25);
 
   /* Sidebar */
   --sidebar-width: 260px;
@@ -72,6 +76,34 @@
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 400ms ease;
+}
+
+/* Colors - Light Theme */
+html[data-theme='light'] {
+  --bg-primary: #F5F7F9;
+  --bg-secondary: #EBEFF3;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #EBEFF3;
+  --bg-input: #FFFFFF;
+  --bg-glass: rgba(255, 255, 255, 0.75);
+
+  --text-primary: #3F4E65;
+  /* Logo slate blue */
+  --text-secondary: #566680;
+  --text-muted: #808D9A;
+  --text-on-primary: #1e293b;
+
+  --heading-gradient: linear-gradient(135deg, #1A365D, #3F4E65);
+  /* Blue gradient for light mode text */
+
+  --border-color: rgba(63, 78, 101, 0.12);
+  --border-color-hover: rgba(63, 78, 101, 0.2);
+
+  --shadow-glow: 0 0 20px rgba(244, 197, 24, 0.2);
+
+  --accent-primary-light: rgba(244, 197, 24, 0.15);
+  --danger-bg: rgba(255, 107, 107, 0.08);
+  --success-bg: rgba(0, 184, 148, 0.08);
 }
 
 /* ===== RESET & BASE ===== */
@@ -111,7 +143,9 @@ button {
   color: inherit;
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   font-family: inherit;
   border: none;
   outline: none;
@@ -119,7 +153,8 @@ input, textarea, select {
   color: inherit;
 }
 
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
@@ -210,7 +245,8 @@ img {
 
 .btn-primary {
   background: var(--accent-gradient);
-  color: white;
+  color: var(--text-on-primary);
+  font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
 
@@ -366,7 +402,7 @@ img {
   justify-content: center;
   font-weight: 600;
   font-size: 0.9rem;
-  color: white;
+  color: var(--text-on-primary);
   flex-shrink: 0;
 }
 
@@ -414,7 +450,7 @@ img {
 
 .tab.active {
   background: var(--accent-gradient);
-  color: white;
+  color: var(--text-on-primary);
   box-shadow: var(--shadow-sm);
 }
 
@@ -514,7 +550,7 @@ img {
 .page-header h1 {
   font-size: 1.8rem;
   font-weight: 700;
-  background: var(--accent-gradient);
+  background: var(--heading-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -552,8 +588,13 @@ img {
 
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInUp {
@@ -561,6 +602,7 @@ img {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -572,6 +614,7 @@ img {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -583,6 +626,7 @@ img {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -590,14 +634,29 @@ img {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ===== RESPONSIVE ===== */
@@ -605,6 +664,7 @@ img {
   .grid-4 {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }

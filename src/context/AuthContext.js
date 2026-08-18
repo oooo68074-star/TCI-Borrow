@@ -6,7 +6,8 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut as firebaseSignOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
@@ -59,7 +60,7 @@ export function AuthProvider({ children }) {
         return userData;
     };
 
-    const register = async (name, email, password) => {
+    const register = async (name, email, password, studentId = '') => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
 
@@ -69,7 +70,7 @@ export function AuthProvider({ children }) {
             role: 'user',
             avatar: null,
             department: '',
-            studentId: '',
+            studentId,
             phone: '',
             createdAt: new Date().toISOString()
         };
@@ -88,19 +89,18 @@ export function AuthProvider({ children }) {
     };
 
     const updateProfile = async (updates) => {
-        if (!user || (!user.id && !auth.currentUser)) return;
-        const uid = user?.id || auth.currentUser.uid;
+        await updateDoc(doc(db, 'users', user.id), updates);
+        setUser(prev => ({ ...prev, ...updates }));
+    };
 
-        const updatedUser = { ...user, ...updates };
-        await updateDoc(doc(db, 'users', uid), updates);
-        setUser(updatedUser);
-        return updatedUser;
+    const resetPassword = async (email) => {
+        await sendPasswordResetEmail(auth, email);
     };
 
     const isAdmin = user?.role === 'admin';
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, isAdmin }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, resetPassword, isAdmin }}>
             {children}
         </AuthContext.Provider>
     );

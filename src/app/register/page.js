@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, Sparkles, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Contact } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import styles from '../login/page.module.css';
 
@@ -12,6 +12,7 @@ export default function RegisterPage() {
     const { register } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
+        studentId: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -40,7 +41,7 @@ export default function RegisterPage() {
 
         setLoading(true);
         try {
-            await register(formData.name, formData.email, formData.password);
+            await register(formData.name, formData.email, formData.password, formData.studentId);
             setTimeout(() => {
                 router.push('/');
             }, 100);
@@ -71,11 +72,9 @@ export default function RegisterPage() {
 
             <div className={styles.authCard}>
                 <div className={styles.authHeader}>
-                    <div className={styles.logoIcon}>
-                        <Sparkles size={28} />
-                    </div>
+                    <img src="/logo.png" alt="TCIMCRU Logo" style={{ width: '240px', height: 'auto', marginBottom: '16px', display: 'inline-block' }} />
                     <h1>สมัครสมาชิก</h1>
-                    <p>สร้างบัญชีเพื่อเริ่มใช้งาน BorrowHub</p>
+                    <p>สร้างบัญชีเพื่อเริ่มใช้งาน TCIMCRU</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className={styles.authForm}>
@@ -91,6 +90,22 @@ export default function RegisterPage() {
                                 placeholder="ชื่อ นามสกุล"
                                 name="name"
                                 value={formData.name}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className={`input-group ${styles.inputGroup}`}>
+                        <label>รหัสนักศึกษา</label>
+                        <div className="input-icon">
+                            <Contact size={18} />
+                            <input
+                                type="text"
+                                className="input-field"
+                                placeholder="รหัสนักศึกษา (เช่น 6500001)"
+                                name="studentId"
+                                value={formData.studentId}
                                 onChange={handleChange}
                                 required
                             />

@@ -105,6 +105,14 @@ export default function AdminBorrowsPage() {
                                         <div className={styles.metaRow}>
                                             <span><User size={14} /> {borrow.borrowerName}</span>
                                             <span><Calendar size={14} /> {formatDate(borrow.borrowDate)}</span>
+                                            {borrow.status === 'active' && borrow.dueDate && (() => {
+                                                const isOverdue = new Date(borrow.dueDate) < new Date();
+                                                return (
+                                                    <span className={isOverdue ? styles.overdueText : styles.dueText}>
+                                                        {isOverdue ? '⚠️ เลยกำหนด:' : '⌛ กำหนด:'} {formatDate(borrow.dueDate)}
+                                                    </span>
+                                                );
+                                            })()}
                                             {borrow.note && <span>💬 {borrow.note}</span>}
                                         </div>
                                     </div>

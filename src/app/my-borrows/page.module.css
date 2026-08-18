@@ -28,11 +28,11 @@
 
 .activeTab {
     background: var(--accent-gradient);
-    color: white;
+    color: var(--text-on-primary);
 }
 
 .activeTab:hover {
-    color: white;
+    color: var(--text-on-primary);
 }
 
 .tabCount {
@@ -122,6 +122,11 @@
     align-items: center;
     gap: 4px;
     color: var(--warning) !important;
+}
+
+.overdue {
+    color: var(--danger) !important;
+    font-weight: 600;
 }
 
 .statusBadge {

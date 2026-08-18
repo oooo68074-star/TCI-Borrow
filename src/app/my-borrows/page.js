@@ -104,12 +104,15 @@ export default function MyBorrowsPage() {
                                         {borrow.returnDate && (
                                             <span>คืน: {formatDate(borrow.returnDate)}</span>
                                         )}
-                                        {borrow.status === 'active' && borrow.dueDate && (
-                                            <span className={styles.dueBadge}>
-                                                <AlertCircle size={12} />
-                                                กำหนดคืน: {formatDate(borrow.dueDate)}
-                                            </span>
-                                        )}
+                                        {borrow.status === 'active' && borrow.dueDate && (() => {
+                                            const isOverdue = new Date(borrow.dueDate) < new Date();
+                                            return (
+                                                <span className={`${styles.dueBadge} ${isOverdue ? styles.overdue : ''}`}>
+                                                    <AlertCircle size={12} />
+                                                    {isOverdue ? 'เลยกำหนดคืน:' : 'กำหนดคืน:'} {formatDate(borrow.dueDate)}
+                                                </span>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                                 <span className={`badge ${badge.class} ${styles.statusBadge}`}>

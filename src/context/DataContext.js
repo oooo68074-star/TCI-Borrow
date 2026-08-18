@@ -8,7 +8,11 @@ import {
     addDoc,
     updateDoc,
     deleteDoc,
-    doc
+    doc,
+    query,
+    where,
+    orderBy,
+    writeBatch
 } from 'firebase/firestore';
 
 const DataContext = createContext(null);
@@ -16,7 +20,11 @@ const DataContext = createContext(null);
 export function DataProvider({ children }) {
     const [items, setItems] = useState([]);
     const [borrows, setBorrows] = useState([]);
+    const [notifications, setNotifications] = useState([]);
     const [isLoaded, setIsLoaded] = useState(false);
+
+    // Current user id for filtering notifications (set from outside)
+    const [currentUserId, setCurrentUserId] = useState(null);
 
     useEffect(() => {
         // Listen to items collection
@@ -31,7 +39,7 @@ export function DataProvider({ children }) {
         const unsubBorrows = onSnapshot(collection(db, 'borrows'), (snapshot) => {
             const borrowsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setBorrows(borrowsList);
-            setIsLoaded(true); // Assuming heavily relied data is loaded
+            setIsLoaded(true);
         }, (error) => {
             console.error("Error fetching borrows real-time:", error);
             setIsLoaded(true);
@@ -43,6 +51,41 @@ export function DataProvider({ children }) {
         };
     }, []);
 
+    // Listen to notifications for current user
+    useEffect(() => {
+        if (!currentUserId) {
+            setNotifications([]);
+            return;
+        }
+
+        const q = query(
+            collection(db, 'notifications'),
+            where('userId', '==', currentUserId),
+            orderBy('createdAt', 'desc')
+        );
+
+        const unsub = onSnapshot(q, (snapshot) => {
+            const notifList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setNotifications(notifList);
+        }, (error) => {
+            console.error("Error fetching notifications:", error);
+            // Fallback: try without orderBy if composite index not available
+            const fallbackQ = query(
+                collection(db, 'notifications'),
+                where('userId', '==', currentUserId)
+            );
+            onSnapshot(fallbackQ, (snapshot) => {
+                const notifList = snapshot.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setNotifications(notifList);
+            });
+        });
+
+        return () => unsub();
+    }, [currentUserId]);
+
+    // --- Items ---
     const addItem = async (newItem) => {
         try {
             const itemData = {
@@ -75,6 +118,7 @@ export function DataProvider({ children }) {
         }
     };
 
+    // --- Borrows ---
     const addBorrowRequest = async (request) => {
         try {
             const borrowData = {
@@ -82,23 +126,108 @@ export function DataProvider({ children }) {
                 status: 'pending',
                 borrowDate: new Date().toISOString()
             };
-            await addDoc(collection(db, 'borrows'), borrowData);
+            const docRef = await addDoc(collection(db, 'borrows'), borrowData);
+
+            // Notify admin(s) about new borrow request
+            await addNotification({
+                userId: request.ownerId || 'admin',
+                title: 'คำขอยืมใหม่',
+                message: `${request.borrowerName} ขอยืม ${request.itemName}`,
+                link: '/admin/borrows',
+                type: 'borrow_request'
+            });
+
+            return docRef;
         } catch (err) {
             console.error("Error requesting borrow in Firestore:", err);
             throw err;
         }
     };
 
-    const updateBorrowStatus = async (id, newStatus) => {
+    const updateBorrowStatus = async (id, newStatus, borrowData = null) => {
         try {
+            const borrow = borrowData || borrows.find(b => b.id === id);
             const updates = { status: newStatus };
+
             if (newStatus === 'returned') {
                 updates.returnDate = new Date().toISOString();
+            } else if (newStatus === 'active') {
+                // Set due date based on expectedReturnDays
+                const days = borrow?.expectedReturnDays || 7;
+                const dueDate = new Date();
+                dueDate.setDate(dueDate.getDate() + days);
+                updates.dueDate = dueDate.toISOString();
             }
+
             await updateDoc(doc(db, 'borrows', id), updates);
+
+            // Find the borrow record for notification
+            if (borrow) {
+                const statusMessages = {
+                    active: { title: 'คำขอยืมอนุมัติแล้ว ✅', message: `คำขอยืม ${borrow.itemName || 'สินค้า'} ได้รับการอนุมัติ กำหนดคืน ${updates.dueDate ? new Date(updates.dueDate).toLocaleDateString('th-TH') : ''}`, type: 'borrow_approved' },
+                    rejected: { title: 'คำขอยืมถูกปฏิเสธ ❌', message: `คำขอยืม ${borrow.itemName || 'สินค้า'} ถูกปฏิเสธ`, type: 'borrow_rejected' },
+                    returned: { title: 'คืนของเรียบร้อย 📦', message: `${borrow.itemName || 'สินค้า'} ถูกรับคืนเรียบร้อยแล้ว`, type: 'borrow_returned' },
+                };
+
+                const msg = statusMessages[newStatus];
+                if (msg && borrow.borrowerId) {
+                    await addNotification({
+                        userId: borrow.borrowerId,
+                        title: msg.title,
+                        message: msg.message,
+                        link: '/my-borrows',
+                        type: msg.type
+                    });
+                }
+            }
         } catch (err) {
             console.error("Error updating borrow status in Firestore:", err);
             throw err;
+        }
+    };
+
+    // --- Notifications ---
+    const addNotification = async (notif) => {
+        try {
+            await addDoc(collection(db, 'notifications'), {
+                ...notif,
+                read: false,
+                createdAt: new Date().toISOString()
+            });
+        } catch (err) {
+            console.error("Error adding notification:", err);
+        }
+    };
+
+    const markNotificationRead = async (id) => {
+        try {
+            await updateDoc(doc(db, 'notifications', id), { read: true });
+        } catch (err) {
+            console.error("Error marking notification as read:", err);
+        }
+    };
+
+    const markAllNotificationsRead = async () => {
+        try {
+            const batch = writeBatch(db);
+            notifications.filter(n => !n.read).forEach(n => {
+                batch.update(doc(db, 'notifications', n.id), { read: true });
+            });
+            await batch.commit();
+        } catch (err) {
+            console.error("Error marking all notifications as read:", err);
+        }
+    };
+
+    const clearAllNotifications = async () => {
+        try {
+            const batch = writeBatch(db);
+            notifications.forEach(n => {
+                batch.delete(doc(db, 'notifications', n.id));
+            });
+            await batch.commit();
+        } catch (err) {
+            console.error("Error clearing notifications:", err);
         }
     };
 
@@ -106,12 +235,18 @@ export function DataProvider({ children }) {
         <DataContext.Provider value={{
             items,
             borrows,
+            notifications,
             isLoaded,
+            setCurrentUserId,
             addItem,
             updateItem,
             deleteItem,
             addBorrowRequest,
-            updateBorrowStatus
+            updateBorrowStatus,
+            addNotification,
+            markNotificationRead,
+            markAllNotificationsRead,
+            clearAllNotifications
         }}>
             {children}
         </DataContext.Provider>

@@ -27,11 +27,11 @@
 
 .activeTab {
     background: var(--accent-gradient);
-    color: white;
+    color: var(--text-on-primary);
 }
 
 .activeTab:hover {
-    color: white;
+    color: var(--text-on-primary);
 }
 
 .tabCount {
@@ -109,6 +109,15 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+}
+
+.dueText {
+    color: var(--warning) !important;
+}
+
+.overdueText {
+    color: var(--danger) !important;
+    font-weight: 600;
 }
 
 /* Actions */

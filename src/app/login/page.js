@@ -50,10 +50,7 @@ export default function LoginPage() {
 
             <div className={styles.authCard}>
                 <div className={styles.authHeader}>
-                    <div className={styles.logoIcon}>
-                        <Sparkles size={28} />
-                    </div>
-                    <h1>BorrowHub</h1>
+                    <img src="/logo.png" alt="TCIMCRU Logo" style={{ width: '240px', height: 'auto', marginBottom: '16px', display: 'inline-block' }} />
                     <p>เข้าสู่ระบบเพื่อจัดการการยืม-คืน</p>
                 </div>
 
@@ -87,6 +84,9 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+                            <Link href="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '500' }}>ลืมรหัสผ่าน?</Link>
                         </div>
                     </div>
 

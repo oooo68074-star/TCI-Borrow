@@ -90,7 +90,9 @@ export default function UserDashboard() {
                     <p>เจ้าของ: {borrow.ownerName}</p>
                     <span className={styles.dueDate}>
                       <Clock size={14} />
-                      คืนภายใน: {new Date(borrow.returnDate || borrow.dueDate).toLocaleDateString('th-TH')}
+                      {borrow.dueDate
+                        ? `คืนภายใน: ${new Date(borrow.dueDate).toLocaleDateString('th-TH')}`
+                        : `แจ้งคืนใน ${borrow.expectedReturnDays || 7} วัน`}
                     </span>
                   </div>
                   <span className="badge badge-borrowed">กำลังยืม</span>

@@ -1,0 +1,161 @@
+.settingsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    max-width: 700px;
+}
+
+.settingsSection {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--space-xl);
+}
+
+.settingsSection:last-child {
+    border-bottom: none;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.sectionIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sectionHeader h2 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.sectionHeader p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.settingItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.settingItem:hover {
+    background: var(--bg-secondary);
+}
+
+.settingInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settingInfo h3 {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.settingInfo p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* Toggle Switch */
+.toggle {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.toggle.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.toggleDot {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: var(--radius-full);
+    transition: transform var(--transition-fast);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.toggle.active .toggleDot {
+    transform: translateX(22px);
+}
+
+/* Password Section */
+.passwordForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+/* Danger Zone */
+.dangerZone {
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+}
+
+.dangerZone h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--danger);
+    margin-bottom: var(--space-sm);
+}
+
+.dangerZone p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+}
+
+.successMsg {
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    animation: fadeInUp 0.3s ease;
+}
+
+.errorMsg {
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    animation: fadeInUp 0.3s ease;
+}
