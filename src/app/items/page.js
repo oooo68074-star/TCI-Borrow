@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation';
 import { Search, Grid3X3, List, Filter, Package } from 'lucide-react';
 import { categories } from '@/data/mockData';
 import { useData } from '@/context/DataContext';
-import TiltCard from '@/components/TiltCard';
 import styles from './page.module.css';
 
 function ItemsContent() {
@@ -132,7 +131,7 @@ function ItemsContent() {
             ) : viewMode === 'grid' ? (
                 <div className="grid-items">
                     {filteredItems.map((item, index) => (
-                        <TiltCard
+                        <div
                             key={item.id}
                             className={`card ${styles.itemCard}`}
                             style={{ animationDelay: `${index * 0.05}s` }}
@@ -161,13 +160,13 @@ function ItemsContent() {
                                     </div>
                                 </div>
                             </Link>
-                        </TiltCard>
+                        </div>
                     ))}
                 </div>
             ) : (
                 <div className={styles.listView}>
                     {filteredItems.map((item, index) => (
-                        <TiltCard
+                        <div
                             key={item.id}
                             className={`card ${styles.listItem}`}
                             style={{ animationDelay: `${index * 0.03}s` }}
@@ -194,7 +193,7 @@ function ItemsContent() {
                                     {getStatusText(item.status)}
                                 </span>
                             </Link>
-                        </TiltCard>
+                        </div>
                     ))}
                 </div>
             )}

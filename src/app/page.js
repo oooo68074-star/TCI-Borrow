@@ -5,7 +5,6 @@ import { Package, ArrowLeftRight, Clock, TrendingUp, Search, ChevronRight } from
 import { categories } from '@/data/mockData';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
-import TiltCard from '@/components/TiltCard';
 import styles from './page.module.css';
 
 export default function UserDashboard() {
@@ -162,7 +161,7 @@ export default function UserDashboard() {
         </div>
         <div className="grid-items">
           {recentItems.map((item, index) => (
-            <TiltCard
+            <div
               key={item.id}
               className={`card ${styles.itemCard}`}
               style={{ animationDelay: `${index * 0.05}s` }}
@@ -185,7 +184,7 @@ export default function UserDashboard() {
                   </div>
                 </div>
               </Link>
-            </TiltCard>
+            </div>
           ))}
         </div>
       </div>
