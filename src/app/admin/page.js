@@ -9,7 +9,27 @@ import { useData } from '@/context/DataContext';
 import styles from './page.module.css';
 
 export default function AdminDashboard() {
-    const { items, borrows } = useData();
+    const { items, borrows, isLoaded } = useData();
+
+    if (!isLoaded) {
+        return (
+            <div className="page-container">
+                <div className="page-header">
+                    <div className="skeleton-glass skeleton-title" style={{ width: '35%' }}></div>
+                    <div className="skeleton-glass skeleton-text" style={{ width: '45%' }}></div>
+                </div>
+                <div className={styles.statsGrid}>
+                    {[1, 2, 3, 4].map(i => <div key={i} className="skeleton-glass skeleton-card"></div>)}
+                </div>
+                <div className={styles.recentSection} style={{ marginTop: '32px' }}>
+                    <div className="skeleton-glass skeleton-title" style={{ width: '20%' }}></div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {[1, 2, 3, 4].map(i => <div key={i} className="skeleton-glass" style={{ height: '80px', borderRadius: '12px' }}></div>)}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const totalItems = items.length;
     const availableItems = items.filter(i => i.status === 'available').length;
@@ -31,6 +51,31 @@ export default function AdminDashboard() {
         };
         return map[status] || { label: status, class: '' };
     };
+
+    // Calculate last 7 days chart data
+    const last7Days = Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        d.setHours(0, 0, 0, 0);
+        return d;
+    });
+
+    const chartData = last7Days.map(date => {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        const count = borrows.filter(b => {
+            if (!b.borrowDate) return false;
+            const bDate = new Date(b.borrowDate);
+            return bDate >= date && bDate < nextDay;
+        }).length;
+
+        return {
+            label: date.toLocaleDateString('th-TH', { weekday: 'short' }),
+            count,
+        };
+    });
+
+    const maxCount = Math.max(...chartData.map(d => d.count), 5); // default base height max
 
     return (
         <div className="page-container">
@@ -76,6 +121,28 @@ export default function AdminDashboard() {
                         <span className={styles.statNumber}>{activeBorrows.length}</span>
                         <span className={styles.statLabel}>กำลังถูกยืม</span>
                     </div>
+                </div>
+            </div>
+
+            {/* Dashboard Analytics Chart */}
+            <div className={`card ${styles.chartCard}`}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '8px' }}>📉 สถิติการยืม (7 วันล่าสุด)</h3>
+                <div className={styles.chartContainer}>
+                    {chartData.map((data, index) => {
+                        const heightPercent = (data.count / maxCount) * 100;
+                        return (
+                            <div key={index} className={styles.barCol}>
+                                <div className={styles.barTooltip}>{data.count} รายการ</div>
+                                <div className={styles.barTrack}>
+                                    <div
+                                        className={styles.barFill}
+                                        style={{ height: `${heightPercent}%`, animationDelay: `${index * 0.1}s` }}
+                                    ></div>
+                                </div>
+                                <div className={styles.barLabel}>{data.label}</div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

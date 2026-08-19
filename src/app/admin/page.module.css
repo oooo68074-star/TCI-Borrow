@@ -149,3 +149,96 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Bar Chart */
+.chartCard {
+    margin-bottom: var(--space-xl);
+}
+
+.chartContainer {
+    height: 200px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.barCol {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+    position: relative;
+    cursor: crosshair;
+}
+
+.barTrack {
+    width: 70%;
+    max-width: 48px;
+    height: calc(100% - 24px);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    display: flex;
+    align-items: flex-end;
+    position: relative;
+}
+
+html[data-theme='light'] .barTrack {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.barFill {
+    width: 100%;
+    background: var(--accent-gradient);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    animation: scaleYIn 1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    transform-origin: bottom;
+}
+
+@keyframes scaleYIn {
+    from {
+        transform: scaleY(0);
+    }
+
+    to {
+        transform: scaleY(1);
+    }
+}
+
+.barLabel {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    height: 16px;
+    text-transform: uppercase;
+}
+
+.barTooltip {
+    position: absolute;
+    top: -24px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.2s;
+    pointer-events: none;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    z-index: 10;
+}
+
+.barCol:hover .barTooltip {
+    opacity: 1;
+    transform: translateY(0);
+}

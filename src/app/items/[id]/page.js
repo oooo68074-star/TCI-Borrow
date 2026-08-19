@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ArrowLeft, MapPin, User, Calendar, Clock, Tag,
-    Heart, Share2, AlertCircle, CheckCircle2, X
+    Heart, Share2, AlertCircle, CheckCircle2, X, QrCode
 } from 'lucide-react';
 import { categories } from '@/data/mockData';
 import { useAuth } from '@/context/AuthContext';
@@ -18,6 +18,7 @@ export default function ItemDetailPage() {
     const params = useParams();
     const router = useRouter();
     const [showBorrowModal, setShowBorrowModal] = useState(false);
+    const [showQrModal, setShowQrModal] = useState(false);
     const [borrowNote, setBorrowNote] = useState('');
     const [borrowDays, setBorrowDays] = useState(7);
     const [submitted, setSubmitted] = useState(false);
@@ -109,11 +110,11 @@ export default function ItemDetailPage() {
                             <h1 className={styles.itemTitle}>{item.name}</h1>
                         </div>
                         <div className={styles.actions}>
-                            <button className="btn-icon btn-secondary">
-                                <Heart size={18} />
+                            <button className="btn-icon btn-secondary" onClick={() => setShowQrModal(true)} title="แชร์ QR Code">
+                                <QrCode size={18} />
                             </button>
-                            <button className="btn-icon btn-secondary">
-                                <Share2 size={18} />
+                            <button className="btn-icon btn-secondary" title="ชื่นชอบ">
+                                <Heart size={18} />
                             </button>
                         </div>
                     </div>
@@ -251,6 +252,33 @@ export default function ItemDetailPage() {
                                 </div>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* QR Code Modal */}
+            {showQrModal && (
+                <div className="modal-overlay" onClick={() => setShowQrModal(false)}>
+                    <div className="modal" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                        <div className="modal-header">
+                            <h2>สแกนเพื่อเข้าสู่หน้านี้</h2>
+                            <button onClick={() => setShowQrModal(false)} className="btn-icon btn-secondary">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div style={{ background: '#fff', padding: '16px', borderRadius: '16px', display: 'inline-block', marginBottom: '16px', border: '1px solid var(--border-color)' }}>
+                            <img
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                                alt="Item QR Code"
+                                width="200"
+                                height="200"
+                                style={{ borderRadius: '8px' }}
+                            />
+                        </div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                            เพื่อนของคุณสามารถใช้กล้องโทรศัพท์แสกน QR Code นี้<br />
+                            เพื่อเด้งเข้ามาขอยืมสิ่งของชิ้นนี้ได้ทันที 📷
+                        </p>
                     </div>
                 </div>
             )}

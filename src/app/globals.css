@@ -8,7 +8,13 @@
   --bg-card: #4B5A73;
   --bg-card-hover: #566680;
   --bg-input: #334054;
-  --bg-glass: rgba(63, 78, 101, 0.7);
+  --bg-glass-rgb: 31, 39, 54;
+  --bg-glass-opacity: 0.35;
+  --bg-glass: rgba(var(--bg-glass-rgb), var(--bg-glass-opacity));
+
+  --bg-panel-rgb: 25, 33, 46;
+  --bg-panel-opacity: 0.85;
+  --bg-panel: rgba(var(--bg-panel-rgb), var(--bg-panel-opacity));
 
   --text-primary: #F4F5F7;
   --text-secondary: #C3C6CC;
@@ -85,7 +91,11 @@ html[data-theme='light'] {
   --bg-card: #FFFFFF;
   --bg-card-hover: #EBEFF3;
   --bg-input: #FFFFFF;
-  --bg-glass: rgba(255, 255, 255, 0.75);
+  --bg-glass-rgb: 255, 255, 255;
+  --bg-glass: rgba(var(--bg-glass-rgb), var(--bg-glass-opacity));
+
+  --bg-panel-rgb: 250, 251, 252;
+  --bg-panel: rgba(var(--bg-panel-rgb), var(--bg-panel-opacity));
 
   --text-primary: #3F4E65;
   /* Logo slate blue */
@@ -120,14 +130,35 @@ html {
   scroll-behavior: smooth;
 }
 
+@keyframes meshGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg-primary);
+  background: linear-gradient(-45deg, #1f2736, #3F4E65, #2C3A4F, #4B5A73);
+  background-size: 400% 400%;
+  animation: meshGradient 18s ease infinite;
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+html[data-theme='light'] body {
+  background: #e0f2fe;
+  /* Solid pastel blue */
 }
 
 a {
@@ -190,8 +221,10 @@ img {
 
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-width);
-  padding-top: var(--navbar-height);
+  min-width: 0;
+  /* Prevent flex overflow blowout */
+  margin-left: calc(var(--sidebar-width) + var(--space-xl));
+  padding-top: calc(var(--navbar-height) + var(--space-xl));
   min-height: 100vh;
   transition: margin-left var(--transition-normal);
 }
@@ -207,26 +240,68 @@ img {
 
 /* Card */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--bg-glass);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: all var(--transition-normal);
 }
 
 .card:hover {
-  border-color: var(--border-color-hover);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.card-glass {
+html[data-theme='light'] .card {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+.card-glass,
+.liquid-glass {
   background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xl);
   padding: var(--space-lg);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme='light'] .liquid-glass,
+html[data-theme='light'] .card-glass {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+/* 3D Tilt Card */
+.tilt-card {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.tilt-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), rgba(255, 255, 255, 0.6) 0%, transparent 60%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  z-index: 10;
+  mix-blend-mode: normal;
+}
+
+.tilt-glare.active {
+  opacity: 1;
 }
 
 /* Buttons */
@@ -495,15 +570,23 @@ img {
 }
 
 .modal {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--bg-glass);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
   width: 90%;
   max-width: 500px;
   max-height: 85vh;
   overflow-y: auto;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   animation: scaleIn 0.25s ease;
+}
+
+html[data-theme='light'] .modal {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 20px rgba(255, 255, 255, 0.5);
 }
 
 .modal-header {
@@ -659,6 +742,51 @@ img {
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* ===== SKELETON UI ===== */
+.skeleton-glass {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.05) 25%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.05) 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme='light'] .skeleton-glass {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.4) 25%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0.4) 75%);
+}
+
+.skeleton-text {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 70%;
+  margin-bottom: 12px;
+}
+
+.skeleton-card {
+  min-height: 120px;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .grid-4 {
@@ -673,6 +801,7 @@ img {
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
+    padding-top: calc(var(--navbar-height) + var(--space-xl) + var(--space-md));
   }
 
   .page-container {

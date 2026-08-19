@@ -1,19 +1,29 @@
 .navbar {
     position: fixed;
-    top: 0;
-    left: var(--sidebar-width);
-    right: 0;
+    top: var(--space-md);
+    left: calc(var(--sidebar-width) + var(--space-md));
+    right: var(--space-md);
+    margin: 0 auto;
+    max-width: 900px;
     height: var(--navbar-height);
-    background: var(--bg-glass);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-panel);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 var(--space-lg);
     z-index: 100;
     transition: left var(--transition-normal);
+}
+
+html[data-theme='light'] .navbar {
+    background: var(--bg-panel);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .left {
@@ -285,7 +295,8 @@
 
 @media (max-width: 768px) {
     .navbar {
-        left: 0;
+        left: var(--space-md);
+        max-width: none;
     }
 
     .menuBtn {

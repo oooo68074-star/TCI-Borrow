@@ -131,67 +131,69 @@ function ItemsContent() {
             ) : viewMode === 'grid' ? (
                 <div className="grid-items">
                     {filteredItems.map((item, index) => (
-                        <Link
+                        <TiltCard
                             key={item.id}
-                            href={`/items/${item.id}`}
                             className={`card ${styles.itemCard}`}
                             style={{ animationDelay: `${index * 0.05}s` }}
                         >
-                            <div className={styles.itemImageContainer}>
-                                {item.image ? (
-                                    <img src={item.image} alt={item.name} className={styles.itemImageElement} loading="lazy" />
-                                ) : (
-                                    <div className={styles.itemImageFallback}>
-                                        <span className={styles.itemEmoji}>{getCategoryIcon(item.category)}</span>
+                            <Link href={`/items/${item.id}`} style={{ display: 'flex', flexDirection: 'column', height: '100%', textDecoration: 'none', color: 'inherit' }}>
+                                <div className={styles.itemImageContainer}>
+                                    {item.image ? (
+                                        <img src={item.image} alt={item.name} className={styles.itemImageElement} loading="lazy" />
+                                    ) : (
+                                        <div className={styles.itemImageFallback}>
+                                            <span className={styles.itemEmoji}>{getCategoryIcon(item.category)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className={styles.itemInfo}>
+                                    <div className={styles.itemTop}>
+                                        <h3 className={styles.itemName}>{item.name}</h3>
+                                        <span className={`badge ${getStatusClass(item.status)}`}>
+                                            {getStatusText(item.status)}
+                                        </span>
                                     </div>
-                                )}
-                            </div>
-                            <div className={styles.itemInfo}>
-                                <div className={styles.itemTop}>
-                                    <h3 className={styles.itemName}>{item.name}</h3>
-                                    <span className={`badge ${getStatusClass(item.status)}`}>
-                                        {getStatusText(item.status)}
-                                    </span>
+                                    <p className={styles.itemDesc}>{item.description}</p>
+                                    <div className={styles.itemMeta}>
+                                        <span>📍 {item.location}</span>
+                                        <span>👤 {item.ownerName}</span>
+                                    </div>
                                 </div>
-                                <p className={styles.itemDesc}>{item.description}</p>
-                                <div className={styles.itemMeta}>
-                                    <span>📍 {item.location}</span>
-                                    <span>👤 {item.ownerName}</span>
-                                </div>
-                            </div>
-                        </Link>
+                            </Link>
+                        </TiltCard>
                     ))}
                 </div>
             ) : (
                 <div className={styles.listView}>
                     {filteredItems.map((item, index) => (
-                        <Link
+                        <TiltCard
                             key={item.id}
-                            href={`/items/${item.id}`}
                             className={`card ${styles.listItem}`}
                             style={{ animationDelay: `${index * 0.03}s` }}
                         >
-                            <div className={styles.listItemImageContainer}>
-                                {item.image ? (
-                                    <img src={item.image} alt={item.name} className={styles.listItemImage} loading="lazy" />
-                                ) : (
-                                    <div className={styles.listItemIcon}>
-                                        {getCategoryIcon(item.category)}
-                                    </div>
-                                )}
-                            </div>
-                            <div className={styles.listItemInfo}>
-                                <h3>{item.name}</h3>
-                                <p>{item.description}</p>
-                            </div>
-                            <div className={styles.listItemMeta}>
-                                <span>📍 {item.location}</span>
-                                <span>👤 {item.ownerName}</span>
-                            </div>
-                            <span className={`badge ${getStatusClass(item.status)}`}>
-                                {getStatusText(item.status)}
-                            </span>
-                        </Link>
+                            <Link href={`/items/${item.id}`} style={{ display: 'flex', alignItems: 'center', width: '100%', textDecoration: 'none', color: 'inherit', paddingRight: '20px' }}>
+                                <div className={styles.listItemImageContainer}>
+                                    {item.image ? (
+                                        <img src={item.image} alt={item.name} className={styles.listItemImage} loading="lazy" />
+                                    ) : (
+                                        <div className={styles.listItemIcon}>
+                                            {getCategoryIcon(item.category)}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className={styles.listItemInfo}>
+                                    <h3>{item.name}</h3>
+                                    <p>{item.description}</p>
+                                </div>
+                                <div className={styles.listItemMeta}>
+                                    <span>📍 {item.location}</span>
+                                    <span>👤 {item.ownerName}</span>
+                                </div>
+                                <span className={`badge ${getStatusClass(item.status)}`}>
+                                    {getStatusText(item.status)}
+                                </span>
+                            </Link>
+                        </TiltCard>
                     ))}
                 </div>
             )}

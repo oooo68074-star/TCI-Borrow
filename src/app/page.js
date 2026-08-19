@@ -5,11 +5,30 @@ import { Package, ArrowLeftRight, Clock, TrendingUp, Search, ChevronRight } from
 import { categories } from '@/data/mockData';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
+import TiltCard from '@/components/TiltCard';
 import styles from './page.module.css';
 
 export default function UserDashboard() {
   const { user } = useAuth();
-  const { items, borrows } = useData();
+  const { items, borrows, isLoaded } = useData();
+
+  if (!isLoaded) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <div className="skeleton-glass skeleton-title" style={{ width: '30%' }}></div>
+          <div className="skeleton-glass skeleton-text" style={{ width: '50%' }}></div>
+        </div>
+        <div className={styles.statsGrid}>
+          {[1, 2, 3, 4].map(i => <div key={i} className="skeleton-glass skeleton-card"></div>)}
+        </div>
+        <div className="skeleton-glass skeleton-title" style={{ width: '25%', marginTop: '32px' }}></div>
+        <div className="grid-items">
+          {[1, 2, 3].map(i => <div key={i} className="skeleton-glass skeleton-card" style={{ height: '240px' }}></div>)}
+        </div>
+      </div>
+    );
+  }
 
   const myBorrows = borrows.filter(b => b.borrowerId === user?.id);
   const activeBorrows = myBorrows.filter(b => b.status === 'active');
@@ -143,29 +162,30 @@ export default function UserDashboard() {
         </div>
         <div className="grid-items">
           {recentItems.map((item, index) => (
-            <Link
+            <TiltCard
               key={item.id}
-              href={`/items/${item.id}`}
               className={`card ${styles.itemCard}`}
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <div className={styles.itemImage}>
-                {item.image ? (
-                  <img src={item.image} alt={item.name} loading="lazy" />
-                ) : (
-                  <span className={styles.itemEmoji}>
-                    {categories.find(c => c.id === item.category)?.icon || '📦'}
-                  </span>
-                )}
-              </div>
-              <div className={styles.itemInfo}>
-                <h3>{item.name}</h3>
-                <p>{item.description}</p>
-                <div className={styles.itemMeta}>
-                  <span>📍 {item.location}</span>
+              <Link href={`/items/${item.id}`} style={{ display: 'flex', flexDirection: 'column', height: '100%', textDecoration: 'none', color: 'inherit' }}>
+                <div className={styles.itemImage}>
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} loading="lazy" />
+                  ) : (
+                    <span className={styles.itemEmoji}>
+                      {categories.find(c => c.id === item.category)?.icon || '📦'}
+                    </span>
+                  )}
                 </div>
-              </div>
-            </Link>
+                <div className={styles.itemInfo}>
+                  <h3>{item.name}</h3>
+                  <p>{item.description}</p>
+                  <div className={styles.itemMeta}>
+                    <span>📍 {item.location}</span>
+                  </div>
+                </div>
+              </Link>
+            </TiltCard>
           ))}
         </div>
       </div>

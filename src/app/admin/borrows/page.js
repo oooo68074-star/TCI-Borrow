@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle2, XCircle, Clock, Package, User, Calendar } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Package, User, Calendar, Download } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import styles from './page.module.css';
 
@@ -50,11 +50,45 @@ export default function AdminBorrowsPage() {
         return map[status] || { label: status, class: '' };
     };
 
+    const exportToCSV = () => {
+        const headers = ['รหัสรายการยืม', 'ชื่อของ', 'ผู้ยืม', 'เจ้าของ', 'วันที่ยืม', 'กำหนดคืน', 'วันที่คืน', 'สถานะ'];
+        const rows = borrows.map(b => {
+            const row = [
+                b.id,
+                b.itemName || '-',
+                b.borrowerName || '-',
+                b.ownerName || '-',
+                b.borrowDate ? new Date(b.borrowDate).toISOString().split('T')[0] : '-',
+                b.dueDate ? new Date(b.dueDate).toISOString().split('T')[0] : '-',
+                b.returnDate ? new Date(b.returnDate).toISOString().split('T')[0] : '-',
+                b.status
+            ];
+            return row.map(field => `"${field}"`).join(',');
+        });
+
+        // Add UTF-8 BOM for Thai encoding in Excel
+        const csvContent = "\uFEFF" + headers.join(',') + '\n' + rows.join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `borrow_report_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1>จัดการคำขอยืม</h1>
-                <p>อนุมัติ ปฏิเสธ และติดตามสถานะการยืม-คืน</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h1>จัดการคำขอยืม</h1>
+                    <p>อนุมัติ ปฏิเสธ และติดตามสถานะการยืม-คืน</p>
+                </div>
+                <button onClick={exportToCSV} className="btn btn-outline" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <Download size={18} /> ออกรายงาน (CSV)
+                </button>
             </div>
 
             {/* Tabs */}

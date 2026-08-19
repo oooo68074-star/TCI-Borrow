@@ -97,21 +97,6 @@ export default function Sidebar({ isOpen, onClose }) {
                     </button>
                 </div>
 
-                {/* Bottom Card */}
-                <div className={styles.bottomCard}>
-                    <div className={styles.cardGlow} />
-                    {isAdmin ? (
-                        <>
-                            <p className={styles.cardTitle}>🔒 Admin Panel</p>
-                            <p className={styles.cardDesc}>จัดการระบบยืม-คืน</p>
-                        </>
-                    ) : (
-                        <>
-                            <p className={styles.cardTitle}>🎓 University Project</p>
-                            <p className={styles.cardDesc}>BorrowHub v1.0</p>
-                        </>
-                    )}
-                </div>
             </aside>
         </>
     );

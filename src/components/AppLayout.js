@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import BorrowBot from '@/components/BorrowBot';
 import { useAuth } from '@/context/AuthContext';
 
 const authPages = ['/login', '/register'];
@@ -92,6 +93,7 @@ export default function AppLayout({ children }) {
                 <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
                 {children}
             </div>
+            <BorrowBot />
         </div>
     );
 }

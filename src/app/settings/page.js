@@ -14,7 +14,7 @@ import styles from './page.module.css';
 export default function SettingsPage() {
     const { user, logout } = useAuth();
     const { clearAllNotifications } = useData();
-    const { theme, toggleTheme } = useTheme();
+    const { theme, toggleTheme, glassOpacity, changeGlassOpacity } = useTheme();
 
     // Notification preferences (stored locally for now)
     const [settings, setSettings] = useState(() => {
@@ -122,6 +122,31 @@ export default function SettingsPage() {
                         >
                             <div className={styles.toggleDot} />
                         </div>
+                    </div>
+
+                    <div className={styles.settingItem} style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+                        <div className={styles.settingInfo} style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h3>ความโปร่งแสงของผิวกระจก (Liquid Glass)</h3>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                                    {Math.round(glassOpacity * 100)}%
+                                </span>
+                            </div>
+                            <p style={{ marginTop: '4px' }}>ปรับระดับความโปร่งใสของพื้นหลังการ์ดทั้งหมดในระบบ</p>
+                        </div>
+                        <input
+                            type="range"
+                            min="0.1"
+                            max="0.9"
+                            step="0.05"
+                            value={glassOpacity}
+                            onChange={(e) => changeGlassOpacity(parseFloat(e.target.value))}
+                            style={{
+                                width: '100%',
+                                cursor: 'pointer',
+                                accentColor: 'var(--accent-primary)'
+                            }}
+                        />
                     </div>
                 </div>
 
