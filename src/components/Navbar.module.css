@@ -146,14 +146,16 @@ html[data-theme='light'] .navbar {
 /* Dropdown */
 .dropdown {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 12px);
     right: 0;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
+    background: var(--bg-glass);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
-    min-width: 300px;
-    box-shadow: var(--shadow-lg);
-    animation: scaleIn 0.2s ease;
+    min-width: 250px;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+    animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
     z-index: 200;
 }
@@ -163,7 +165,7 @@ html[data-theme='light'] .navbar {
     align-items: center;
     justify-content: space-between;
     padding: var(--space-md) var(--space-lg);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-glass);
 }
 
 .dropdownHeader h3 {
@@ -232,7 +234,7 @@ html[data-theme='light'] .navbar {
 }
 
 .notifItem:hover {
-    background: var(--bg-card-hover);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .notifItem.unread {
@@ -283,7 +285,7 @@ html[data-theme='light'] .navbar {
 }
 
 .dropdownItem:hover {
-    background: var(--bg-card-hover);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
 }
 
@@ -297,10 +299,6 @@ html[data-theme='light'] .navbar {
     .navbar {
         left: var(--space-md);
         max-width: none;
-    }
-
-    .menuBtn {
-        display: flex;
     }
 
     .searchBar {

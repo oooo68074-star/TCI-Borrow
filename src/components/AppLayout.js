@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import BottomNav from '@/components/BottomNav';
 import BorrowBot from '@/components/BorrowBot';
 import { useAuth } from '@/context/AuthContext';
 
@@ -19,6 +20,7 @@ export default function AppLayout({ children }) {
 
     // Wait for client mount before doing any routing
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
@@ -93,6 +95,7 @@ export default function AppLayout({ children }) {
                 <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
                 {children}
             </div>
+            <BottomNav />
             <BorrowBot />
         </div>
     );

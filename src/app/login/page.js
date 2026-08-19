@@ -63,6 +63,9 @@ export default function LoginPage() {
                             <Mail size={18} />
                             <input
                                 type="email"
+                                inputMode="email"
+                                autoCapitalize="none"
+                                autoCorrect="off"
                                 className="input-field"
                                 placeholder="your@university.ac.th"
                                 value={email}

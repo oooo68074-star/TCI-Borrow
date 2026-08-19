@@ -54,6 +54,7 @@ export function DataProvider({ children }) {
     // Listen to notifications for current user
     useEffect(() => {
         if (!currentUserId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setNotifications([]);
             return;
         }

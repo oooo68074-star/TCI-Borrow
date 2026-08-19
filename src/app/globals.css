@@ -128,6 +128,7 @@ html[data-theme='light'] {
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  background-color: var(--bg-primary);
 }
 
 @keyframes meshGradient {
@@ -250,10 +251,12 @@ img {
   transition: all var(--transition-normal);
 }
 
-.card:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+@media (hover: hover) {
+  .card:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
 }
 
 html[data-theme='light'] .card {
@@ -310,10 +313,11 @@ html[data-theme='light'] .card-glass {
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: 10px 20px;
+  padding: 12px 20px;
+  min-height: 44px;
   border-radius: var(--radius-md);
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   transition: all var(--transition-fast);
   white-space: nowrap;
 }
@@ -325,10 +329,12 @@ html[data-theme='light'] .card-glass {
   box-shadow: var(--shadow-sm);
 }
 
-.btn-primary:hover {
-  background: var(--accent-gradient-hover);
-  box-shadow: var(--shadow-glow);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .btn-primary:hover {
+    background: var(--accent-gradient-hover);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
 }
 
 .btn-secondary {
@@ -337,9 +343,11 @@ html[data-theme='light'] .card-glass {
   border: 1px solid var(--border-color);
 }
 
-.btn-secondary:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-color-hover);
+@media (hover: hover) {
+  .btn-secondary:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-color-hover);
+  }
 }
 
 .btn-danger {

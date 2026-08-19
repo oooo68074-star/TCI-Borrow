@@ -34,6 +34,7 @@ export default function AdminEditItemPage() {
     useEffect(() => {
         const item = items.find(i => i.id === params.id);
         if (item) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData({
                 name: item.name,
                 description: item.description,

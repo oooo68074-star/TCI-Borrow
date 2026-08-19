@@ -19,6 +19,7 @@ export default function ProfilePage() {
 
     // Sync state when user context loads
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (user) setUserData(user);
     }, [user]);
 

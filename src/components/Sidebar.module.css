@@ -225,18 +225,10 @@ html[data-theme='light'] .sidebar {
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar {
-        transform: translateX(calc(-100% - var(--space-md)));
-    }
-
-    .sidebar.open {
-        transform: translateX(0);
+        display: none !important;
     }
 
     .overlay {
-        display: block;
-    }
-
-    .closeBtn {
-        display: flex;
+        display: none !important;
     }
 }
