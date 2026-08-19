@@ -129,6 +129,44 @@ export function DataProvider({ children }) {
             };
             const docRef = await addDoc(collection(db, 'borrows'), borrowData);
 
+            // --- Autonomous Behavioral Loop (AI Auto-learning) ---
+            try {
+                if (typeof window !== 'undefined') {
+                    const botPendingStr = sessionStorage.getItem('bot_pending_learn');
+                    if (botPendingStr) {
+                        const botPending = JSON.parse(botPendingStr);
+                        const targetItem = items.find(i => i.id === request.itemId);
+
+                        if (targetItem && botPending.text && botPending.docId) {
+                            let itemTag = targetItem.name;
+                            if (targetItem.tags && targetItem.tags.length > 0) {
+                                itemTag = targetItem.tags[0]; // Use the first explicit tag if available
+                            } else if (targetItem.name.includes(' ')) {
+                                itemTag = targetItem.name.split(' ')[0]; // Fallback to first word of item name
+                            }
+
+                            // Add to vocabulary
+                            await addDoc(collection(db, 'bot_vocabulary'), {
+                                words: [botPending.text],
+                                hardwareTags: [itemTag],
+                                cat: targetItem.category || 'others'
+                            });
+
+                            // Mark original query as resolved
+                            await updateDoc(doc(db, 'bot_unknown_queries', botPending.docId), {
+                                status: 'resolved'
+                            });
+
+                            sessionStorage.removeItem('bot_pending_learn');
+                            console.log("🤖 Autonomous AI Learned:", botPending.text, "->", itemTag);
+                        }
+                    }
+                }
+            } catch (botErr) {
+                console.error("Behavioral Loop logic failed:", botErr);
+            }
+            // -----------------------------------------------------
+
             // Notify admin(s) about new borrow request
             await addNotification({
                 userId: request.ownerId || 'admin',

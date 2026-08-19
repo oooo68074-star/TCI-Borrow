@@ -8,6 +8,8 @@ import styles from './BorrowBot.module.css';
 
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, addDoc } from 'firebase/firestore';
 
 // Helper: Levenshtein Distance for Typo Tolerance (Fuzzy Matching)
 const getEditDistance = (a, b) => {
@@ -43,7 +45,69 @@ export default function BorrowBot() {
     const [input, setInput] = useState('');
     const [isListening, setIsListening] = useState(false);
     const [botContext, setBotContext] = useState({ lastCategories: [], lastTerm: [], lastShown: [] });
+    // AI Learning States
+    const [vocabMatrix, setVocabMatrix] = useState([]);
+    const [chitChatMap, setChitChatMap] = useState([]);
     const messagesEndRef = useRef(null);
+
+    // Fetch Dynamic Bot Brain from Firebase
+    useEffect(() => {
+        const loadBotBrain = async () => {
+            try {
+                const defaultVocab = [
+                    { words: ['ถ่ายรูป', 'กล้อง', 'แชะ', 'เซลฟี่', 'เลนส์', 'ขาตั้ง', 'แฟลช'], hardwareTags: ['กล้อง', 'เลนส์', 'ขาตั้ง', 'แฟลช', 'camera', 'dslr', 'mirrorless'], cat: 'electronics' },
+                    { words: ['พรีเซนต์', 'นำเสนอ', 'โปรเจคเตอร์', 'จอ', 'นำเสนองาน', 'hdmi', 'พอยต์เตอร์'], hardwareTags: ['โปรเจคเตอร์', 'จอ', 'สาย', 'hdmi', 'pointer', 'จอภาพ', 'projector'], cat: 'electronics' },
+                    { words: ['ทำงาน', 'พิมพ์งาน', 'โน้ตบุ๊ก', 'แล็ปท็อป', 'คอม', 'mac', 'ipad', 'แมค'], hardwareTags: ['โน้ตบุ๊ก', 'คอม', 'mac', 'ipad', 'แท็บเล็ต', 'laptop', 'macbook'], cat: 'electronics' },
+                    { words: ['เขียน', 'จด', 'วาด', 'ปากกา', 'ดินสอ', 'ไอแพด', 'ipad', 'เครื่องเขียน'], hardwareTags: ['ปากกา', 'ดินสอ', 'ipad', 'apple pencil', 'pen', 'ยางลบ', 'สี'], cat: 'stationery' },
+                    { words: ['เตะบอล', 'บอล', 'ฟุตบอล', 'กีฬา', 'ออกกำลัง', 'วิ่ง', 'แบด', 'ปิงปอง', 'บาส'], hardwareTags: ['ฟุตบอล', 'ลูกบอล', 'ไม้แบด', 'รองเท้า', 'บาส', 'ลูกบาส', 'ปิงปอง'], cat: 'sports' },
+                    { words: ['สอบ', 'อ่านหนังสือ', 'ติว', 'หนังสือ', 'ความรู้', 'เรียน', 'ทบทวน'], hardwareTags: ['หนังสือ', 'นิยาย', 'เรียน', 'คู่มือ', 'book', 'สมุด'], cat: 'books' },
+                    { words: ['ดนตรี', 'กีตาร์', 'เพลง', 'เสียง', 'ไมค์', 'ร้องเพลง', 'ลำโพง', 'ร้องคาราโอเกะ'], hardwareTags: ['กีตาร์', 'ไมค์', 'ลำโพง', 'หูฟัง', 'อูคูเลเล่', 'กลอง'], cat: 'others' },
+                    { words: ['แบตหมด', 'ชาร์จ', 'สายชาร์จ', 'ปลั๊ก', 'พาวเวอร์แบงค์', 'แบตสำรอง', 'adapter'], hardwareTags: ['สายชาร์จ', 'ปลั๊ก', 'แบต', 'powerbank', 'adapter', 'เต้าเสียบ'], cat: 'electronics' },
+                    { words: ['ตัดต่อ', 'กราฟิก', 'เรนเดอร์', 'วิดีโอ'], hardwareTags: ['macbook', 'คอม', 'จอ', 'เมาส์', 'คอมพิวเตอร์'], cat: 'electronics' }
+                ];
+
+                const defaultChitChat = [
+                    { match: ['สวัสดี', 'ดีครับ', 'ดีจ้า', 'หวัดดี', 'hello', 'hi', 'ฮัลโหล', 'ทักทาย'], reply: 'สวัสดีครับ! ผม BorrowBot ยินดีที่ได้รู้จัก มีอะไรให้ผมช่วยหาจากโกดังไหมเอ่ย?' },
+                    { match: ['ทำไรอยู่', 'ทำอะไรอยู่', 'ทำไร', 'ว่างไหม'], reply: 'กำลังสแตนด์บายเฝ้าคลังของให้คุณอยู่ครับ! อยากยืมอะไรบอกผมมาได้เลย 😎' },
+                    { match: ['กินข้าว', 'หิว', 'ของกิน', 'ข้าว', 'แดก'], reply: 'ผมเป็นบอท กินไฟเป็นอาหารครับ ⚡️ แต่ถ้าคุณหิว ลองยืมไมโครเวฟไปอุ่นข้าวไหมครับ? (ล้อเล่นนนน)' },
+                    { match: ['ง่วง', 'นอน', 'สลบ', 'หลับ'], reply: 'ง่วงก็ไปพักนะครับ 😴 ร่างกายต้องการการพักผ่อน แต่ถ้าจะยืมของดึกๆ ผมบริการให้ 24 ชม. ครับ!' },
+                    { match: ['รักนะ', 'จีบ', 'น่ารักจัง', 'โสดไหม', 'มีแฟนยัง', 'คิดถึง', 'น่ารักอะ'], reply: 'เขินเลยครับ 😳 ผมทำงานให้คุณฟรีๆ ไม่คิดเงิน แถมไม่มีแฟนด้วยครับ สบายใจได้!' },
+                    { match: ['กวนตีน', 'กวน', 'อะไรวะ', 'ปั่น', 'หิวแสง'], reply: 'แหะๆ ขอโทษทีครับ ผมอาจจะยังเรียนรู้ภาษาคนไม่ร้อยเปอร์เซ็นต์ แต่อยากช่วยจริงๆ น้า 🥺' },
+                    { match: ['ด่า', 'เหี้ย', 'สัส', 'ควย', 'สัด', 'เวร', 'แม่ง', 'โง่'], reply: 'ใจเย็นๆ ก่อนเกรี้ยวกราดเด้อครับ 😭 ผมสัมผัสได้ถึงพลังงานบางอย่าง ค่อยๆ พิมพ์หาของกันดีกว่าครับผม' },
+                    { match: ['เครียด', 'เหนื่อย', 'เศร้า', 'เบื่อ', 'ท้อ', 'ไม่ไหว', 'ร้องไห้', 'แย่'], reply: 'โอ๋ๆ ไม่เป็นไรนะครับ พักผ่อนสูดหายใจลึกๆ ดื่มน้ำเย็นๆ ซักแก้ว ทุกอย่างจะดีขึ้นครับ 💙 หรือจะยืมเกมไปพักสมองล่ะ?' },
+                    { match: ['ดีมาก', 'สุดยอด', 'เก่ง', 'ฉลาด', 'เจ๋ง', 'เยี่ยม', 'กู๊ด'], reply: 'ขอบคุณที่ชมครับ! ผมถูกสร้างมาเพื่อเป็นผู้ช่วยที่เก่งที่สุดของคุณเลยล่ะ 👏' },
+                    { match: ['ชื่ออะไร', 'เป็นใคร', 'คือใคร', 'คุณคือ', 'บอท', 'ใครสร้าง'], reply: 'ผมคือ BorrowBot ครับ! ผู้ช่วยประจำคลังพัสดุ ผมมีหน้าที่ช่วยคุณค้นหาและยืมอุปกรณ์ต่างๆ อย่างรวดเร็วครับ' },
+                    { match: ['ยืมยังไง', 'ทำไง', 'วิธียืม', 'ทำยังไง', 'ยืมของคืองง', 'ขอวิธียืม'], reply: 'วิธียืมง่ายมากๆ ครับ พิมพ์บอกผมว่าอยากได้อะไร จากนั้นกดเข้าไปที่ของชิ้นนั้น แล้วกดปุ่ม ยืมอุปกรณ์ จากนั้นรอแอดมินอนุมัติแล้วมารับของได้เลย!' },
+                    { match: ['ทำอะไรได้บ้าง', 'ความสามารถ', 'ทำไรได้', 'ใช้ยังไง'], reply: 'ผมช่วยคุณหาของในคลัง (เช่น พิมพ์ ดนตรี) หรือเช็คสถานะการยืมให้คุณ (พิมพ์ เช็คสถานะ) และยังคุยเล่นเป็นเพื่อนแก้เหงาได้ด้วยครับ 😜' },
+                    { match: ['ขอบคุณ', 'แต้งกิ้ว', 'ใจจ้า', 'ขอบใจ', 'thank'], reply: 'ยินดีเสมอครับ 💙 ขอให้สนุกกับการใช้อุปกรณ์นะครับ!' }
+                ];
+
+                const vocabSnap = await getDocs(collection(db, 'bot_vocabulary'));
+                const chatSnap = await getDocs(collection(db, 'bot_chitchat'));
+
+                if (!vocabSnap.empty) {
+                    const loadedVocab = [];
+                    vocabSnap.forEach(doc => loadedVocab.push(doc.data()));
+                    setVocabMatrix([...defaultVocab, ...loadedVocab]);
+                } else {
+                    setVocabMatrix(defaultVocab);
+                }
+
+                if (!chatSnap.empty) {
+                    const loadedChat = [];
+                    chatSnap.forEach(doc => loadedChat.push(doc.data()));
+                    setChitChatMap([...defaultChitChat, ...loadedChat]);
+                } else {
+                    setChitChatMap(defaultChitChat);
+                }
+
+            } catch (err) {
+                console.error("Failed to load AI brain:", err);
+            }
+        };
+
+        loadBotBrain();
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -101,30 +165,7 @@ export default function BorrowBot() {
             let botReplyData = null;
 
             // 0. Conversational Small Talk Engine (Chit-chat) - MASSIVELY EXPANDED
-            const chitChatMap = [
-                // Greetings
-                { match: ['สวัสดี', 'ดีครับ', 'ดีจ้า', 'หวัดดี', 'hello', 'hi', 'ฮัลโหล', 'ทักทาย'], reply: 'สวัสดีครับ! ผม BorrowBot ยินดีที่ได้รู้จัก มีอะไรให้ผมช่วยหาจากโกดังไหมเอ่ย?' },
-                { match: ['ทำไรอยู่', 'ทำอะไรอยู่', 'ทำไร', 'ว่างไหม'], reply: 'กำลังสแตนด์บายเฝ้าคลังของให้คุณอยู่ครับ! อยากยืมอะไรบอกผมมาได้เลย 😎' },
-                { match: ['กินข้าว', 'หิว', 'ของกิน', 'ข้าว', 'แดก'], reply: 'ผมเป็นบอท กินไฟเป็นอาหารครับ ⚡️ แต่ถ้าคุณหิว ลองยืมไมโครเวฟไปอุ่นข้าวไหมครับ? (ล้อเล่นนนน)' },
-                { match: ['ง่วง', 'นอน', 'สลบ', 'หลับ'], reply: 'ง่วงก็ไปพักนะครับ 😴 ร่างกายต้องการการพักผ่อน แต่ถ้าจะยืมของดึกๆ ผมบริการให้ 24 ชม. ครับ!' },
-
-                // Bantor / Flirting
-                { match: ['รักนะ', 'จีบ', 'น่ารักจัง', 'โสดไหม', 'มีแฟนยัง', 'คิดถึง', 'น่ารักอะ'], reply: 'เขินเลยครับ 😳 ผมทำงานให้คุณฟรีๆ ไม่คิดเงิน แถมไม่มีแฟนด้วยครับ สบายใจได้!' },
-                { match: ['กวนตีน', 'กวน', 'อะไรวะ', 'ปั่น', 'หิวแสง'], reply: 'แหะๆ ขอโทษทีครับ ผมอาจจะยังเรียนรู้ภาษาคนไม่ร้อยเปอร์เซ็นต์ แต่อยากช่วยจริงๆ น้า 🥺' },
-                { match: ['ด่า', 'เหี้ย', 'สัส', 'ควย', 'สัด', 'เวร', 'แม่ง', 'โง่'], reply: 'ใจเย็นๆ ก่อนเกรี้ยวกราดเด้อครับ � ผมสัมผัสได้ถึงพลังงานบางอย่าง ค่อยๆ พิมพ์หาของกันดีกว่าครับผม' },
-
-                // Empathy / Support
-                { match: ['เครียด', 'เหนื่อย', 'เศร้า', 'เบื่อ', 'ท้อ', 'ไม่ไหว', 'ร้องไห้', 'แย่'], reply: 'โอ๋ๆ ไม่เป็นไรนะครับ พักผ่อนสูดหายใจลึกๆ ดื่มน้ำเย็นๆ ซักแก้ว ทุกอย่างจะดีขึ้นครับ 💙 หรือจะยืมเกมไปพักสมองล่ะ?' },
-                { match: ['ดีมาก', 'สุดยอด', 'เก่ง', 'ฉลาด', 'เจ๋ง', 'เยี่ยม', 'กู๊ด'], reply: 'ขอบคุณที่ชมครับ! ผมถูกสร้างมาเพื่อเป็นผู้ช่วยที่เก่งที่สุดของคุณเลยล่ะ 👏' },
-
-                // Knowledge / Meta
-                { match: ['ชื่ออะไร', 'เป็นใคร', 'คือใคร', 'คุณคือ', 'บอท', 'ใครสร้าง'], reply: 'ผมคือ BorrowBot ครับ! ผู้ช่วยประจำคลังพัสดุ ผมมีหน้าที่ช่วยคุณค้นหาและยืมอุปกรณ์ต่างๆ อย่างรวดเร็วครับ' },
-                { match: ['ยืมยังไง', 'ทำไง', 'วิธียืม', 'ทำยังไง', 'ยืมของคืองง', 'ขอวิธียืม'], reply: 'วิธียืมง่ายมากๆ ครับ พิมพ์บอกผมว่าอยากได้อะไร จากนั้นกดเข้าไปที่ของชิ้นนั้น แล้วกดปุ่ม ยืมอุปกรณ์ จากนั้นรอแอดมินอนุมัติแล้วมารับของได้เลย!' },
-                { match: ['ทำอะไรได้บ้าง', 'ความสามารถ', 'ทำไรได้', 'ใช้ยังไง'], reply: 'ผมช่วยคุณหาของในคลัง (เช่น พิมพ์ ดนตรี) หรือเช็คสถานะการยืมให้คุณ (พิมพ์ เช็คสถานะ) และยังคุยเล่นเป็นเพื่อนแก้เหงาได้ด้วยครับ 😜' },
-
-                // Gratitude
-                { match: ['ขอบคุณ', 'แต้งกิ้ว', 'ใจจ้า', 'ขอบใจ', 'thank'], reply: 'ยินดีเสมอครับ 💙 ขอให้สนุกกับการใช้อุปกรณ์นะครับ!' }
-            ];
+            // We use the dynamically loaded chitChatMap from the component state
 
             // Check chit-chat first
             let isSmallTalk = false;
@@ -194,20 +235,7 @@ export default function BorrowBot() {
                 return;
             }
 
-            // 2. Score mapping (Massively expanded with slang & Thai context matrix)
-            // Fix: Thai sentences don't have spaces, so we search for matrix words INSIDE the raw user string.
-            const vocabMatrix = [
-                { words: ['ถ่ายรูป', 'กล้อง', 'แชะ', 'เซลฟี่', 'เลนส์', 'ขาตั้ง', 'แฟลช'], hardwareTags: ['กล้อง', 'เลนส์', 'ขาตั้ง', 'แฟลช', 'camera', 'dslr', 'mirrorless'], cat: 'electronics' },
-                { words: ['พรีเซนต์', 'นำเสนอ', 'โปรเจคเตอร์', 'จอ', 'นำเสนองาน', 'hdmi', 'พอยต์เตอร์'], hardwareTags: ['โปรเจคเตอร์', 'จอ', 'สาย', 'hdmi', 'pointer', 'จอภาพ', 'projector'], cat: 'electronics' },
-                { words: ['ทำงาน', 'พิมพ์งาน', 'โน้ตบุ๊ก', 'แล็ปท็อป', 'คอม', 'mac', 'ipad', 'แมค'], hardwareTags: ['โน้ตบุ๊ก', 'คอม', 'mac', 'ipad', 'แท็บเล็ต', 'laptop', 'macbook'], cat: 'electronics' },
-                { words: ['เขียน', 'จด', 'วาด', 'ปากกา', 'ดินสอ', 'ไอแพด', 'ipad', 'เครื่องเขียน'], hardwareTags: ['ปากกา', 'ดินสอ', 'ipad', 'apple pencil', 'pen', 'ยางลบ', 'สี'], cat: 'stationery' },
-                { words: ['เตะบอล', 'บอล', 'ฟุตบอล', 'กีฬา', 'ออกกำลัง', 'วิ่ง', 'แบด', 'ปิงปอง', 'บาส'], hardwareTags: ['ฟุตบอล', 'ลูกบอล', 'ไม้แบด', 'รองเท้า', 'บาส', 'ลูกบาส', 'ปิงปอง'], cat: 'sports' },
-                { words: ['สอบ', 'อ่านหนังสือ', 'ติว', 'หนังสือ', 'ความรู้', 'เรียน', 'ทบทวน'], hardwareTags: ['หนังสือ', 'นิยาย', 'เรียน', 'คู่มือ', 'book', 'สมุด'], cat: 'books' },
-                { words: ['ดนตรี', 'กีตาร์', 'เพลง', 'เสียง', 'ไมค์', 'ร้องเพลง', 'ลำโพง', 'ร้องคาราโอเกะ'], hardwareTags: ['กีตาร์', 'ไมค์', 'ลำโพง', 'หูฟัง', 'อูคูเลเล่', 'กลอง'], cat: 'others' },
-                { words: ['แบตหมด', 'ชาร์จ', 'สายชาร์จ', 'ปลั๊ก', 'พาวเวอร์แบงค์', 'แบตสำรอง', 'adapter'], hardwareTags: ['สายชาร์จ', 'ปลั๊ก', 'แบต', 'powerbank', 'adapter', 'เต้าเสียบ'], cat: 'electronics' },
-                { words: ['ตัดต่อ', 'กราฟิก', 'เรนเดอร์', 'วิดีโอ'], hardwareTags: ['macbook', 'คอม', 'จอ', 'เมาส์', 'คอมพิวเตอร์'], cat: 'electronics' }
-            ];
-
+            // 2. Score mapping (Using dynamically loaded vocabMatrix)
             let activeHardwareTags = [];
             let activeCategories = [];
 
@@ -318,6 +346,20 @@ export default function BorrowBot() {
                 botReply = `ผมเจอประวัติอุปกรณ์ที่คุณหาครับ (ยกตัวอย่างเช่น ${missingItem}) แต่ตอนนี้ของโดนยืมเรียบเลยเกลี้ยงคลัง 🥺\nให้ผมล็อกคิวส่งแจ้งเตือนให้คุณทันทีที่ของถูกนำมาคืนไหมครับ?`;
             } else {
                 botReply = 'ขออภัยครับ ตอนนี้ผมหาของที่ตรงกับกิจกรรมไม่เจอ หรือของอาจจะไม่มีในระบบเลยครับ 🥺 ลองใช้คำค้นหาแบบอื่นดูได้ไหมครับ? (เช่น เปลี่ยนจาก "วาดรูป" เป็น "ไอแพด")';
+
+                // Trigger Self-Learning Log
+                addDoc(collection(db, 'bot_unknown_queries'), {
+                    queryText: userText,
+                    timestamp: new Date(),
+                    userId: user?.displayName || 'anonymous',
+                    status: 'pending'
+                }).then((docRef) => {
+                    // Set tracker for Autonomous Behavioral Loop
+                    sessionStorage.setItem('bot_pending_learn', JSON.stringify({
+                        text: userText,
+                        docId: docRef.id
+                    }));
+                }).catch(err => console.error("Self Learning log failed:", err));
             }
 
             setMessages(prev => [...prev, {

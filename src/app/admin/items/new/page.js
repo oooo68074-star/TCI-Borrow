@@ -255,8 +255,22 @@ export default function AdminNewItemPage() {
                         />
                     </div>
 
-                    <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={uploading}>
-                        {uploading ? 'กำลังอัปโหลดและเพิ่ม...' : 'เพิ่มของ'}
+                    <button
+                        type="submit"
+                        className={styles.submitBtn}
+                        disabled={uploading}
+                    >
+                        {uploading ? (
+                            <>
+                                <span className={styles.spinner}></span>
+                                กำลังอัปโหลดและเพิ่ม...
+                            </>
+                        ) : (
+                            <>
+                                <span>+</span>
+                                เพิ่มของใหม่เข้าระบบ
+                            </>
+                        )}
                     </button>
                 </form>
 

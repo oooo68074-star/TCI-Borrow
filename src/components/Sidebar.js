@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Package, ArrowLeftRight, PlusCircle,
-    User, ChevronLeft, Sparkles, ClipboardList, LogOut, Settings
+    User, ChevronLeft, Sparkles, ClipboardList, LogOut, Settings, Brain
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import styles from './Sidebar.module.css';
@@ -59,8 +59,10 @@ export default function Sidebar({ isOpen, onClose }) {
                     </span>
                     {navItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href ||
-                            (item.href !== '/' && item.href !== '/admin' && pathname.startsWith(item.href));
+                        const exactMatch = pathname === item.href;
+                        const isChildMatch = item.href !== '/' && item.href !== '/admin' && pathname.startsWith(item.href + '/') && !navItems.some(nav => nav.href === pathname);
+                        const isActive = exactMatch || isChildMatch;
+
                         return (
                             <Link
                                 key={item.href}

@@ -47,17 +47,18 @@ export function AuthProvider({ children }) {
         return () => unsubscribe();
     }, []);
 
-    const login = async (email, password) => {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const firebaseUser = userCredential.user;
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+    const login = (email, password) => {
+        return signInWithEmailAndPassword(auth, email, password).then(async (userCredential) => {
+            const firebaseUser = userCredential.user;
+            const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
 
-        let userData = { id: firebaseUser.uid, email: firebaseUser.email, role: 'user', name: 'User' };
-        if (userDoc.exists()) {
-            userData = { id: firebaseUser.uid, ...userDoc.data() };
-        }
-        setUser(userData);
-        return userData;
+            let userData = { id: firebaseUser.uid, email: firebaseUser.email, role: 'user', name: 'User' };
+            if (userDoc.exists()) {
+                userData = { id: firebaseUser.uid, ...userDoc.data() };
+            }
+            setUser(userData);
+            return userData;
+        });
     };
 
     const register = async (name, email, password, studentId = '') => {

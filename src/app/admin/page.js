@@ -52,15 +52,17 @@ export default function AdminDashboard() {
         return map[status] || { label: status, class: '' };
     };
 
-    // Calculate last 7 days chart data
-    const last7Days = Array.from({ length: 7 }).map((_, i) => {
+    // Calculate Current Week (Monday to Sunday)
+    const currentWeekDates = Array.from({ length: 7 }).map((_, i) => {
         const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
+        const day = d.getDay(); // 0 is Sunday, 1 is Monday...
+        const diffToMonday = day === 0 ? -6 : -(day - 1);
+        d.setDate(d.getDate() + diffToMonday + i);
         d.setHours(0, 0, 0, 0);
         return d;
     });
 
-    const chartData = last7Days.map(date => {
+    const chartData = currentWeekDates.map(date => {
         const nextDay = new Date(date);
         nextDay.setDate(nextDay.getDate() + 1);
         const count = borrows.filter(b => {
@@ -126,7 +128,7 @@ export default function AdminDashboard() {
 
             {/* Dashboard Analytics Chart */}
             <div className={`card ${styles.chartCard}`}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '8px' }}>📉 สถิติการยืม (7 วันล่าสุด)</h3>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '8px' }}>📉 สถิติการยืม (สัปดาห์นี้ จันทร์-อาทิตย์)</h3>
                 <div className={styles.chartContainer}>
                     {chartData.map((data, index) => {
                         const heightPercent = (data.count / maxCount) * 100;

@@ -1,16 +1,102 @@
 .bottomNav {
     display: none;
     position: fixed;
-    bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
-    left: var(--space-md);
-    right: var(--space-md);
     background: var(--bg-panel);
     backdrop-filter: blur(28px) saturate(180%);
     -webkit-backdrop-filter: blur(28px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: var(--radius-xl);
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     z-index: 900;
+    transition: all 0.5s cubic-bezier(0.2, 0.9, 0.2, 1);
+    /* Flex container for the Handle + NavItems */
+    align-items: center;
+    border-radius: var(--radius-xl);
+}
+
+.bottomNav.dragging {
+    transition: none;
+    /* Disable transition while tracking pointer directly */
+    opacity: 0.8;
+}
+
+/* --- Snap Modes --- */
+.bottom {
+    bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+    left: var(--space-md);
+    right: var(--space-md);
+    flex-direction: column;
+}
+
+.bottom .navContainer {
+    flex-direction: row;
+    height: 54px;
+    width: 100%;
+}
+
+.left {
+    top: 50%;
+    left: var(--space-md);
+    transform: translateY(-50%);
+    /* Base transform when static */
+    flex-direction: column;
+    padding: 8px 0;
+    width: 72px;
+}
+
+.left .navContainer {
+    flex-direction: column;
+    width: 100%;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+}
+
+.right {
+    top: 50%;
+    right: var(--space-md);
+    transform: translateY(-50%);
+    flex-direction: column;
+    padding: 8px 0;
+    width: 72px;
+}
+
+.right .navContainer {
+    flex-direction: column;
+    width: 100%;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+}
+
+/* --- Drag Handle --- */
+.dragHandle {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    padding: 8px 0 2px 0;
+    touch-action: none;
+}
+
+.gripIndicator {
+    width: 36px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.left .dragHandle,
+.right .dragHandle {
+    padding: 12px 0 4px 0;
+}
+
+.dragHandle:active {
+    cursor: grabbing;
+}
+
+.dragHandle:active .gripIndicator {
+    background: rgba(255, 255, 255, 0.7);
+    transform: scale(1.05);
 }
 
 html[data-theme='light'] .bottomNav {
@@ -23,7 +109,6 @@ html[data-theme='light'] .bottomNav {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    height: 60px;
     padding: 0 10px;
 }
 
@@ -64,6 +149,6 @@ html[data-theme='light'] .bottomNav {
 
 @media (max-width: 768px) {
     .bottomNav {
-        display: block;
+        display: flex;
     }
 }
