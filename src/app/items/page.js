@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Search, Grid3X3, List, Filter, Package } from 'lucide-react';
 import { categories } from '@/data/mockData';
 import { useData } from '@/context/DataContext';
+import TiltCard from '@/components/TiltCard';
 import styles from './page.module.css';
 
 function ItemsContent() {
