@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import {
-    Bell, Shield, Trash2, CheckCircle2, AlertTriangle, Moon, Sun
+    Bell, Lock, Shield, Trash2, CheckCircle2, AlertTriangle, Moon, Sun
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
 import { useTheme } from '@/context/ThemeContext';
+import { auth } from '@/lib/firebase';
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import styles from './page.module.css';
 
 export default function SettingsPage() {
@@ -33,10 +35,61 @@ export default function SettingsPage() {
         };
     });
 
+    // Password change
+    const [passwordForm, setPasswordForm] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordSuccess, setPasswordSuccess] = useState('');
+    const [changingPassword, setChangingPassword] = useState(false);
+
     const toggleSetting = (key) => {
         const updated = { ...settings, [key]: !settings[key] };
         setSettings(updated);
         localStorage.setItem('borrowhub_settings', JSON.stringify(updated));
+    };
+
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        setPasswordError('');
+        setPasswordSuccess('');
+
+        if (passwordForm.newPassword.length < 6) {
+            setPasswordError('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร');
+            return;
+        }
+
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setPasswordError('รหัสผ่านใหม่ไม่ตรงกัน');
+            return;
+        }
+
+        setChangingPassword(true);
+
+        try {
+            const firebaseUser = auth.currentUser;
+            const credential = EmailAuthProvider.credential(firebaseUser.email, passwordForm.currentPassword);
+            await reauthenticateWithCredential(firebaseUser, credential);
+            await updatePassword(firebaseUser, passwordForm.newPassword);
+
+            setPasswordSuccess('เปลี่ยนรหัสผ่านสำเร็จ!');
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+            setTimeout(() => setPasswordSuccess(''), 3000);
+        } catch (err) {
+            console.error("Password change error:", err);
+            if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                setPasswordError('รหัสผ่านเดิมไม่ถูกต้อง');
+            } else if (err.code === 'auth/weak-password') {
+                setPasswordError('รหัสผ่านไม่ปลอดภัยเพียงพอ');
+            } else {
+                setPasswordError(`เกิดข้อผิดพลาด: ${err.message}`);
+            }
+        } finally {
+            setChangingPassword(false);
+        }
     };
 
     return (
@@ -169,6 +222,71 @@ export default function SettingsPage() {
                             <Trash2 size={16} /> ล้างการแจ้งเตือนทั้งหมด
                         </button>
                     </div>
+                </div>
+
+                {/* Password */}
+                <div className={`card ${styles.settingsSection}`}>
+                    <div className={styles.sectionHeader}>
+                        <div className={styles.sectionIcon}>
+                            <Lock size={20} />
+                        </div>
+                        <div>
+                            <h2>เปลี่ยนรหัสผ่าน</h2>
+                            <p>อัปเดตรหัสผ่านเพื่อความปลอดภัย</p>
+                        </div>
+                    </div>
+
+                    {passwordSuccess && (
+                        <div className={styles.successMsg}>
+                            <CheckCircle2 size={16} /> {passwordSuccess}
+                        </div>
+                    )}
+                    {passwordError && (
+                        <div className={styles.errorMsg}>
+                            <AlertTriangle size={16} /> {passwordError}
+                        </div>
+                    )}
+
+                    <form className={styles.passwordForm} onSubmit={handlePasswordChange}>
+                        <div className="input-group">
+                            <label>รหัสผ่านเดิม</label>
+                            <input
+                                type="password"
+                                className="input-field"
+                                value={passwordForm.currentPassword}
+                                onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                                required
+                            />
+                        </div>
+                        <div className="input-group">
+                            <label>รหัสผ่านใหม่</label>
+                            <input
+                                type="password"
+                                className="input-field"
+                                value={passwordForm.newPassword}
+                                onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                                placeholder="อย่างน้อย 6 ตัวอักษร"
+                                required
+                            />
+                        </div>
+                        <div className="input-group">
+                            <label>ยืนยันรหัสผ่านใหม่</label>
+                            <input
+                                type="password"
+                                className="input-field"
+                                value={passwordForm.confirmPassword}
+                                onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={changingPassword}
+                        >
+                            {changingPassword ? 'กำลังเปลี่ยน...' : 'เปลี่ยนรหัสผ่าน'}
+                        </button>
+                    </form>
                 </div>
 
                 {/* Account Info */}
