@@ -1,0 +1,231 @@
+.reportsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.header p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.activeTab {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tabCount {
+    background: var(--surface-light);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.activeTab .tabCount {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Overdue Warning Banner */
+.warningBanner {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #ef4444;
+}
+
+.warningBanner h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.warningBanner p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Lists */
+.listContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.reportCard {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+}
+
+.reportCardLeft {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.itemIcon {
+    width: 48px;
+    height: 48px;
+    background: var(--surface-light);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    overflow: hidden;
+}
+
+.itemIcon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.details h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.meta {
+    display: flex;
+    gap: 16px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.overdueText {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* Analytics */
+.analyticsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.rankCard {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.rankNumber {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    width: 32px;
+    text-align: center;
+}
+
+.rankCard:nth-child(1) .rankNumber { color: #f59e0b; } /* Gold */
+.rankCard:nth-child(2) .rankNumber { color: #94a3b8; } /* Silver */
+.rankCard:nth-child(3) .rankNumber { color: #b45309; } /* Bronze */
+
+.rankInfo {
+    flex: 1;
+}
+
+.rankInfo h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.rankInfo p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px;
+    background: var(--surface-color);
+    border: 1px dashed var(--border-color);
+    border-radius: 16px;
+    text-align: center;
+    color: var(--text-secondary);
+    gap: 16px;
+}
+
+.emptyState h3 {
+    color: var(--text-primary);
+    font-size: 1.25rem;
+}

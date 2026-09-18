@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ArrowLeftRight, User, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Package, ArrowLeftRight, User, ClipboardList, PieChart } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import styles from './BottomNav.module.css';
 
@@ -18,6 +18,7 @@ const adminNav = [
     { href: '/admin', label: 'แดชบอร์ด', icon: LayoutDashboard },
     { href: '/admin/items', label: 'จัดการ', icon: Package },
     { href: '/admin/borrows', label: 'คำขอ', icon: ClipboardList },
+    { href: '/admin/reports', label: 'รายงาน', icon: PieChart },
     { href: '/profile', label: 'ฉัน', icon: User },
 ];
 

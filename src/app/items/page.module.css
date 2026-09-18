@@ -80,7 +80,8 @@
 }
 
 .itemImageContainer {
-    height: 160px;
+    aspect-ratio: 4 / 3;
+    height: auto;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
     position: relative;

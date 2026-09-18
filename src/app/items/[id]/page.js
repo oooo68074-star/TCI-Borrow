@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ArrowLeft, MapPin, User, Calendar, Clock, Tag,
-    Heart, Share2, AlertCircle, CheckCircle2, X, QrCode
+    Heart, Share2, AlertCircle, CheckCircle2, X, QrCode, Wrench
 } from 'lucide-react';
 import { categories } from '@/data/mockData';
 import { useAuth } from '@/context/AuthContext';
@@ -13,15 +13,17 @@ import { useData } from '@/context/DataContext';
 import styles from './page.module.css';
 
 export default function ItemDetailPage() {
-    const { user } = useAuth();
-    const { items, borrows, addBorrowRequest } = useData();
+    const { user, isAdmin } = useAuth();
+    const { items, borrows, addBorrowRequest, resolveItemMaintenance } = useData();
     const params = useParams();
     const router = useRouter();
     const [showBorrowModal, setShowBorrowModal] = useState(false);
     const [showQrModal, setShowQrModal] = useState(false);
     const [borrowNote, setBorrowNote] = useState('');
     const [borrowDays, setBorrowDays] = useState(7);
+    const [borrowQuantity, setBorrowQuantity] = useState(1);
     const [submitted, setSubmitted] = useState(false);
+    const [resolvingMaintenance, setResolvingMaintenance] = useState(false);
 
     const item = items.find(i => i.id === params.id);
     const itemBorrows = borrows.filter(b => b.itemId === params.id);
@@ -30,10 +32,11 @@ export default function ItemDetailPage() {
         return (
             <div className="page-container">
                 <div className="empty-state">
-                    <AlertCircle size={64} />
-                    <h3>ไม่พบรายการนี้</h3>
+                    <AlertCircle size={48} />
+                    <h3>ไม่พบรายการของ</h3>
+                    <p>ของที่คุณกำลังค้นหาอาจถูกลบหรือไม่มีอยู่ในระบบ</p>
                     <Link href="/items" className="btn btn-primary" style={{ marginTop: '16px' }}>
-                        กลับไปรายการของ
+                        กลับหน้ารายการของ
                     </Link>
                 </div>
             </div>
@@ -42,14 +45,39 @@ export default function ItemDetailPage() {
 
     const category = categories.find(c => c.id === item.category);
 
+    const currentAvailableQty = item.availableQuantity !== undefined ? item.availableQuantity : (item.quantity || 1);
+
     const getStatusText = (status) => {
-        const map = { available: 'ว่าง', borrowed: 'ถูกยืม', unavailable: 'ไม่พร้อมใช้งาน' };
+        const map = {
+            available: 'ว่าง',
+            borrowed: 'ถูกยืม',
+            unavailable: 'ไม่พร้อมใช้งาน',
+            maintenance: '🛠️ กำลังส่งซ่อม / ชำรุด'
+        };
         return map[status] || status;
     };
 
     const getStatusClass = (status) => {
-        const map = { available: 'badge-available', borrowed: 'badge-borrowed', unavailable: 'badge-unavailable' };
+        const map = {
+            available: 'badge-available',
+            borrowed: 'badge-borrowed',
+            unavailable: 'badge-unavailable',
+            maintenance: 'badge-unavailable'
+        };
         return map[status] || '';
+    };
+
+    const handleResolveMaintenance = async () => {
+        if (!confirm('ต้องการเปลี่ยนสถานะอุปกรณ์นี้เป็น "ว่าง / พร้อมใช้งาน" หรือไม่?')) return;
+        setResolvingMaintenance(true);
+        try {
+            await resolveItemMaintenance(item.id);
+        } catch (err) {
+            console.error(err);
+            alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
+        } finally {
+            setResolvingMaintenance(false);
+        }
     };
 
     const formatDate = (str) => new Date(str).toLocaleDateString('th-TH', {
@@ -71,6 +99,7 @@ export default function ItemDetailPage() {
             borrowerDept: user.department,
             note: borrowNote,
             expectedReturnDays: borrowDays,
+            quantity: borrowQuantity,
         });
 
         setTimeout(() => {
@@ -140,7 +169,7 @@ export default function ItemDetailPage() {
                         </div>
                         <div className={styles.metaItem}>
                             <Tag size={16} />
-                            <span>จำนวนรวม: {item.quantity || 1} ชิ้น</span>
+                            <span>จำนวนรวม: {item.quantity || 1} ชิ้น (ว่าง {currentAvailableQty} ชิ้น)</span>
                         </div>
                         <div className={styles.metaItem}>
                             <Calendar size={16} />
@@ -169,6 +198,35 @@ export default function ItemDetailPage() {
                         <div className={styles.borrowedNote}>
                             <Clock size={16} />
                             <span>ของชิ้นนี้ถูกยืมอยู่ในขณะนี้</span>
+                        </div>
+                    )}
+
+                    {item.status === 'maintenance' && (
+                        <div className={styles.maintenanceBanner}>
+                            <div className={styles.maintenanceHeader}>
+                                <Wrench size={18} />
+                                <strong>อุปกรณ์นี้อยู่ระหว่างการส่งซ่อมบำรุง / ชำรุด</strong>
+                            </div>
+                            {item.maintenanceReason && (
+                                <p className={styles.maintenanceText}>
+                                    <strong>อาการ/สาเหตุ:</strong> {item.maintenanceReason}
+                                </p>
+                            )}
+                            {item.maintenanceCost ? (
+                                <p className={styles.maintenanceText}>
+                                    <strong>ประเมินค่าซ่อม/ค่าเสียหาย:</strong> ฿{Number(item.maintenanceCost).toLocaleString()}
+                                </p>
+                            ) : null}
+                            {isAdmin && (
+                                <button
+                                    className="btn btn-outline btn-sm"
+                                    onClick={handleResolveMaintenance}
+                                    disabled={resolvingMaintenance}
+                                    style={{ marginTop: '12px' }}
+                                >
+                                    <CheckCircle2 size={16} /> {resolvingMaintenance ? 'กำลังอัปเดต...' : 'ซ่อมเสร็จแล้ว (เปลี่ยนเป็นพร้อมใช้งาน)'}
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -219,6 +277,24 @@ export default function ItemDetailPage() {
                                 </div>
 
                                 <div className={styles.modalForm}>
+                                    <div className="input-group">
+                                        <label>จำนวนที่ต้องการยืม (ว่าง {currentAvailableQty} ชิ้น)</label>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={currentAvailableQty}
+                                            value={borrowQuantity}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val > 0 && val <= currentAvailableQty) {
+                                                    setBorrowQuantity(val);
+                                                }
+                                            }}
+                                            className="input-field"
+                                            style={{ marginBottom: '12px' }}
+                                        />
+                                    </div>
+
                                     <div className="input-group">
                                         <label>จำนวนวันที่ต้องการยืม</label>
                                         <select

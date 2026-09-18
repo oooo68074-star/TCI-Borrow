@@ -174,7 +174,8 @@
 }
 
 .itemImage {
-  height: 140px;
+  aspect-ratio: 4 / 3;
+  height: auto;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   overflow: hidden;

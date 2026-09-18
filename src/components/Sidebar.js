@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard, Package, ArrowLeftRight, PlusCircle,
-    User, ChevronLeft, Sparkles, ClipboardList, LogOut, Settings, Brain
+    User, ChevronLeft, Sparkles, ClipboardList, LogOut, Settings, Brain, PieChart, Users
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import styles from './Sidebar.module.css';
@@ -22,6 +22,8 @@ const adminNav = [
     { href: '/admin/items', label: 'จัดการของ', icon: Package },
     { href: '/admin/items/new', label: 'เพิ่มของใหม่', icon: PlusCircle },
     { href: '/admin/borrows', label: 'จัดการคำขอยืม', icon: ClipboardList },
+    { href: '/admin/reports', label: 'รายงาน', icon: PieChart },
+    { href: '/admin/users', label: 'จัดการสมาชิก', icon: Users },
     { href: '/profile', label: 'โปรไฟล์', icon: User },
     { href: '/settings', label: 'ตั้งค่า', icon: Settings },
 ];

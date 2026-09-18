@@ -21,7 +21,9 @@ export default function AdminEditItemPage() {
         condition: 'ดี',
         location: '',
         quantity: 1,
-        status: 'available'
+        status: 'available',
+        maintenanceReason: '',
+        maintenanceCost: ''
     });
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
@@ -42,7 +44,9 @@ export default function AdminEditItemPage() {
                 condition: item.condition || 'ดี',
                 location: item.location,
                 quantity: item.quantity || 1,
-                status: item.status
+                status: item.status,
+                maintenanceReason: item.maintenanceReason || '',
+                maintenanceCost: item.maintenanceCost || ''
             });
             setImagePreview(item.image || null);
         }
@@ -116,6 +120,7 @@ export default function AdminEditItemPage() {
 
             await updateItem(params.id, {
                 ...formData,
+                maintenanceCost: formData.maintenanceCost ? Number(formData.maintenanceCost) : 0,
                 image: imageUrl
             });
 
@@ -252,11 +257,45 @@ export default function AdminEditItemPage() {
                                 className="input-field"
                             >
                                 <option value="available">ว่าง / ให้ยืมได้</option>
+                                <option value="maintenance">🛠️ กำลังส่งซ่อม / ชำรุด (Maintenance)</option>
                                 <option value="unavailable">ซ่อมแซม / ไม่พร้อม</option>
                                 <option value="borrowed">ถูกยืมอยู่ (บังคับเปลี่ยนสถานะ)</option>
                             </select>
                         </div>
                     </div>
+
+                    {formData.status === 'maintenance' && (
+                        <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+                            <h3 style={{ color: '#f59e0b', fontSize: '0.95rem', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                🛠️ รายละเอียดการชำรุด / ส่งซ่อม
+                            </h3>
+                            <div className={styles.formRow}>
+                                <div className="input-group" style={{ flex: 2 }}>
+                                    <label>สาเหตุการชำรุด / อาการเสีย</label>
+                                    <input
+                                        type="text"
+                                        name="maintenanceReason"
+                                        placeholder="เช่น จอแตก, ขาตั้งหัก, เลนส์โฟกัสไม่ได้..."
+                                        value={formData.maintenanceReason}
+                                        onChange={handleChange}
+                                        className="input-field"
+                                    />
+                                </div>
+                                <div className="input-group" style={{ flex: 1 }}>
+                                    <label>ประเมินค่าซ่อม (บาท)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        name="maintenanceCost"
+                                        placeholder="0"
+                                        value={formData.maintenanceCost}
+                                        onChange={handleChange}
+                                        className="input-field"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="input-group">
                         <label>อัปเดตรูปภาพ</label>

@@ -11,20 +11,22 @@ export default function AdminItemsPage() {
     const { items, deleteItem } = useData();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedStatus, setSelectedStatus] = useState('all');
 
     const filteredItems = items.filter(item => {
         const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchCategory = selectedCategory === 'all' || item.category === selectedCategory;
-        return matchSearch && matchCategory;
+        const matchStatus = selectedStatus === 'all' || item.status === selectedStatus;
+        return matchSearch && matchCategory && matchStatus;
     });
 
     const getStatusText = (status) => {
-        const map = { available: 'ว่าง', borrowed: 'ถูกยืม', unavailable: 'ไม่พร้อม' };
+        const map = { available: 'ว่าง', borrowed: 'ถูกยืม', unavailable: 'ไม่พร้อม', maintenance: '🛠️ ส่งซ่อม' };
         return map[status] || status;
     };
 
     const getStatusClass = (status) => {
-        const map = { available: 'badge-available', borrowed: 'badge-borrowed', unavailable: 'badge-unavailable' };
+        const map = { available: 'badge-available', borrowed: 'badge-borrowed', unavailable: 'badge-unavailable', maintenance: 'badge-unavailable' };
         return map[status] || '';
     };
 
@@ -62,6 +64,18 @@ export default function AdminItemsPage() {
                     {categories.map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
                     ))}
+                </select>
+                <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="input-field"
+                    style={{ minWidth: '150px' }}
+                >
+                    <option value="all">ทุกสถานะ</option>
+                    <option value="available">ว่าง</option>
+                    <option value="borrowed">ถูกยืม</option>
+                    <option value="maintenance">🛠️ ส่งซ่อม/ชำรุด</option>
+                    <option value="unavailable">ไม่พร้อม</option>
                 </select>
             </div>
 

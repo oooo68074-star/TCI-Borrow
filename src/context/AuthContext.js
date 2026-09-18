@@ -7,11 +7,14 @@ import {
     createUserWithEmailAndPassword,
     signOut as firebaseSignOut,
     onAuthStateChanged,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    signInWithPopup,
+    GoogleAuthProvider
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 const AuthContext = createContext(null);
+const googleProvider = new GoogleAuthProvider();
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
@@ -22,17 +25,24 @@ export function AuthProvider({ children }) {
             if (firebaseUser) {
                 try {
                     // Fetch extended user profile from firestore
-                    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-                    if (userDoc.exists()) {
-                        setUser({ id: firebaseUser.uid, ...userDoc.data() });
+                    const userDocRef = doc(db, 'users', firebaseUser.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        setUser({ id: firebaseUser.uid, ...userDocSnap.data() });
                     } else {
-                        // Fallback in case document is missing
-                        setUser({
-                            id: firebaseUser.uid,
+                        // Auto-create Firestore document for new users (e.g. Google sign-in)
+                        const newUser = {
+                            name: firebaseUser.displayName || 'User',
                             email: firebaseUser.email,
                             role: 'user',
-                            name: firebaseUser.displayName || 'User'
-                        });
+                            avatar: firebaseUser.photoURL || null,
+                            department: '',
+                            studentId: '',
+                            phone: '',
+                            createdAt: new Date().toISOString()
+                        };
+                        await setDoc(userDocRef, newUser);
+                        setUser({ id: firebaseUser.uid, ...newUser });
                     }
                 } catch (error) {
                     console.error("Error fetching user profile:", error);
@@ -59,6 +69,12 @@ export function AuthProvider({ children }) {
             setUser(userData);
             return userData;
         });
+    };
+
+    const signInWithGoogle = async () => {
+        // Only trigger the popup — onAuthStateChanged handles Firestore
+        const result = await signInWithPopup(auth, googleProvider);
+        return { id: result.user.uid, email: result.user.email, name: result.user.displayName };
     };
 
     const register = async (name, email, password, studentId = '') => {
@@ -101,7 +117,7 @@ export function AuthProvider({ children }) {
     const isAdmin = user?.role === 'admin';
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, resetPassword, isAdmin }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, resetPassword, signInWithGoogle, isAdmin }}>
             {children}
         </AuthContext.Provider>
     );

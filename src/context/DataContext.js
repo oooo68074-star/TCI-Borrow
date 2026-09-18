@@ -12,8 +12,15 @@ import {
     query,
     where,
     orderBy,
+    getDocs,
     writeBatch
 } from 'firebase/firestore';
+import {
+    notifyNewBorrowRequest,
+    notifyBorrowApproved,
+    notifyBorrowRejected,
+    notifyBorrowReturned
+} from '@/lib/emailService';
 
 const DataContext = createContext(null);
 
@@ -176,6 +183,27 @@ export function DataProvider({ children }) {
                 type: 'borrow_request'
             });
 
+            // Send email to admin(s) — fire and forget
+            try {
+                const adminSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'admin')));
+                adminSnapshot.forEach((adminDoc) => {
+                    const adminData = adminDoc.data();
+                    if (adminData.email) {
+                        notifyNewBorrowRequest({
+                            adminEmail: adminData.email,
+                            borrowerName: request.borrowerName,
+                            borrowerEmail: request.borrowerEmail || '',
+                            itemName: request.itemName,
+                            quantity: request.quantity,
+                            reason: request.reason,
+                            expectedReturnDays: request.expectedReturnDays,
+                        });
+                    }
+                });
+            } catch (emailErr) {
+                console.error('Email notification failed (non-blocking):', emailErr);
+            }
+
             return docRef;
         } catch (err) {
             console.error("Error requesting borrow in Firestore:", err);
@@ -183,13 +211,18 @@ export function DataProvider({ children }) {
         }
     };
 
-    const updateBorrowStatus = async (id, newStatus, borrowData = null) => {
+    const updateBorrowStatus = async (id, newStatus, borrowData = null, options = {}) => {
         try {
             const borrow = borrowData || borrows.find(b => b.id === id);
             const updates = { status: newStatus };
 
             if (newStatus === 'returned') {
                 updates.returnDate = new Date().toISOString();
+                if (options.markMaintenance) {
+                    updates.damageReported = true;
+                    updates.damageReason = options.maintenanceReason || 'ส่งซ่อม/ชำรุด';
+                    updates.damageCost = options.maintenanceCost || 0;
+                }
             } else if (newStatus === 'active') {
                 // Set due date based on expectedReturnDays
                 const days = borrow?.expectedReturnDays || 7;
@@ -200,12 +233,55 @@ export function DataProvider({ children }) {
 
             await updateDoc(doc(db, 'borrows', id), updates);
 
+            // --- Auto Inventory Deduction & Status Management ---
+            if (borrow && borrow.itemId) {
+                const item = items.find(i => i.id === borrow.itemId);
+                if (item) {
+                    const borrowQty = Number(borrow.quantity) || 1;
+                    let currentAvailableQty = item.availableQuantity !== undefined ? item.availableQuantity : (item.quantity || 1);
+                    let newItemStatus = item.status;
+                    let shouldUpdateItem = false;
+                    const itemExtraUpdates = {};
+
+                    if (newStatus === 'active') {
+                        currentAvailableQty = Math.max(0, currentAvailableQty - borrowQty);
+                        if (currentAvailableQty === 0) {
+                            newItemStatus = 'borrowed';
+                        }
+                        shouldUpdateItem = true;
+                    } else if (newStatus === 'returned') {
+                        // Add back to inventory
+                        const maxQty = item.quantity || 1;
+                        currentAvailableQty = Math.min(maxQty, currentAvailableQty + borrowQty);
+                        
+                        if (options.markMaintenance) {
+                            newItemStatus = 'maintenance';
+                            itemExtraUpdates.maintenanceReason = options.maintenanceReason || 'ชำรุดจากการยืมใช้งาน';
+                            itemExtraUpdates.maintenanceCost = options.maintenanceCost || 0;
+                            itemExtraUpdates.maintenanceReportedAt = new Date().toISOString();
+                        } else if (currentAvailableQty > 0 && newItemStatus === 'borrowed') {
+                            newItemStatus = 'available';
+                        }
+                        shouldUpdateItem = true;
+                    }
+
+                    if (shouldUpdateItem) {
+                        await updateDoc(doc(db, 'items', item.id), {
+                            availableQuantity: currentAvailableQty,
+                            status: newItemStatus,
+                            ...itemExtraUpdates
+                        });
+                    }
+                }
+            }
+            // --------------------------------
+
             // Find the borrow record for notification
             if (borrow) {
                 const statusMessages = {
                     active: { title: 'คำขอยืมอนุมัติแล้ว ✅', message: `คำขอยืม ${borrow.itemName || 'สินค้า'} ได้รับการอนุมัติ กำหนดคืน ${updates.dueDate ? new Date(updates.dueDate).toLocaleDateString('th-TH') : ''}`, type: 'borrow_approved' },
                     rejected: { title: 'คำขอยืมถูกปฏิเสธ ❌', message: `คำขอยืม ${borrow.itemName || 'สินค้า'} ถูกปฏิเสธ`, type: 'borrow_rejected' },
-                    returned: { title: 'คืนของเรียบร้อย 📦', message: `${borrow.itemName || 'สินค้า'} ถูกรับคืนเรียบร้อยแล้ว`, type: 'borrow_returned' },
+                    returned: { title: 'คืนของเรียบร้อย 📦', message: `${borrow.itemName || 'สินค้า'} ถูกรับคืนเรียบร้อยแล้ว${options.markMaintenance ? ' (มีบันทึกส่งซ่อม)' : ''}`, type: 'borrow_returned' },
                 };
 
                 const msg = statusMessages[newStatus];
@@ -217,10 +293,91 @@ export function DataProvider({ children }) {
                         link: '/my-borrows',
                         type: msg.type
                     });
+
+                    // Send email to borrower — fire and forget
+                    try {
+                        const borrowerDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', borrow.borrowerId)));
+                        let borrowerEmail = '';
+                        let borrowerName = borrow.borrowerName || 'ผู้ใช้';
+                        borrowerDoc.forEach((d) => {
+                            const data = d.data();
+                            borrowerEmail = data.email || '';
+                            borrowerName = data.name || borrowerName;
+                        });
+
+                        if (borrowerEmail) {
+                            if (newStatus === 'active') {
+                                notifyBorrowApproved({ borrowerEmail, borrowerName, itemName: borrow.itemName, dueDate: updates.dueDate });
+                            } else if (newStatus === 'rejected') {
+                                notifyBorrowRejected({ borrowerEmail, borrowerName, itemName: borrow.itemName });
+                            } else if (newStatus === 'returned') {
+                                notifyBorrowReturned({ borrowerEmail, borrowerName, itemName: borrow.itemName });
+                            }
+                        }
+                    } catch (emailErr) {
+                        console.error('Email notification failed (non-blocking):', emailErr);
+                    }
                 }
             }
         } catch (err) {
             console.error("Error updating borrow status in Firestore:", err);
+            throw err;
+        }
+    };
+
+    // Notify return from user
+    const notifyReturnBorrow = async (borrowId, returnData) => {
+        try {
+            const borrow = borrows.find(b => b.id === borrowId);
+            const updates = {
+                status: 'pending_return',
+                returnLocation: returnData.location || 'เคาน์เตอร์พัสดุ',
+                returnCondition: returnData.condition || 'สมบูรณ์',
+                returnNote: returnData.note || '',
+                returnRequestedAt: new Date().toISOString()
+            };
+
+            await updateDoc(doc(db, 'borrows', borrowId), updates);
+
+            // Notify admin
+            await addNotification({
+                userId: 'admin',
+                title: 'ผู้ยืมแจ้งคืนของแล้ว 📦',
+                message: `${borrow?.borrowerName || 'ผู้ยืม'} แจ้งคืน "${borrow?.itemName || 'อุปกรณ์'}" ที่ ${updates.returnLocation} (สภาพ: ${updates.returnCondition})`,
+                link: '/admin/borrows',
+                type: 'pending_return'
+            });
+        } catch (err) {
+            console.error("Error notifying return in Firestore:", err);
+            throw err;
+        }
+    };
+
+    // Maintenance helper methods
+    const reportItemMaintenance = async (itemId, maintenanceData) => {
+        try {
+            await updateDoc(doc(db, 'items', itemId), {
+                status: 'maintenance',
+                maintenanceReason: maintenanceData.reason || 'ส่งซ่อมบำรุง',
+                maintenanceCost: Number(maintenanceData.cost) || 0,
+                maintenanceReportedAt: new Date().toISOString()
+            });
+        } catch (err) {
+            console.error("Error setting maintenance status:", err);
+            throw err;
+        }
+    };
+
+    const resolveItemMaintenance = async (itemId) => {
+        try {
+            await updateDoc(doc(db, 'items', itemId), {
+                status: 'available',
+                maintenanceReason: null,
+                maintenanceCost: null,
+                maintenanceResolvedAt: new Date().toISOString()
+            });
+        } catch (err) {
+            console.error("Error resolving maintenance status:", err);
             throw err;
         }
     };
@@ -282,6 +439,9 @@ export function DataProvider({ children }) {
             deleteItem,
             addBorrowRequest,
             updateBorrowStatus,
+            notifyReturnBorrow,
+            reportItemMaintenance,
+            resolveItemMaintenance,
             addNotification,
             markNotificationRead,
             markAllNotificationsRead,

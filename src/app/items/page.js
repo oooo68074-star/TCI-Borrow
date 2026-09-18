@@ -44,6 +44,7 @@ function ItemsContent() {
             available: 'ว่าง',
             borrowed: 'ถูกยืม',
             unavailable: 'ไม่พร้อม',
+            maintenance: 'ส่งซ่อม/ชำรุด',
         };
         return map[status] || status;
     };
@@ -53,6 +54,7 @@ function ItemsContent() {
             available: 'badge-available',
             borrowed: 'badge-borrowed',
             unavailable: 'badge-unavailable',
+            maintenance: 'badge-unavailable',
         };
         return map[status] || '';
     };
@@ -97,6 +99,7 @@ function ItemsContent() {
                         <option value="all">ทุกสถานะ</option>
                         <option value="available">ว่าง</option>
                         <option value="borrowed">ถูกยืม</option>
+                        <option value="maintenance">ส่งซ่อม/ชำรุด</option>
                         <option value="unavailable">ไม่พร้อม</option>
                     </select>
 

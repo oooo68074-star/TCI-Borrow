@@ -81,9 +81,16 @@ export default function AdminDashboard() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1>แดชบอร์ดผู้ดูแล 🔒</h1>
-                <p>ภาพรวมระบบยืม-คืนทั้งหมด</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                    <h1>แดชบอร์ดผู้ดูแล 🔒</h1>
+                    <p>ภาพรวมระบบยืม-คืนทั้งหมด</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <Link href="/admin/users" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Users size={18} /> จัดการสมาชิก
+                    </Link>
+                </div>
             </div>
 
             {/* Stats */}
